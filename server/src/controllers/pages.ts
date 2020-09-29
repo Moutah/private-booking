@@ -19,7 +19,3 @@ export const main = (req: Request, res: Response) => {
     return res.send(data);
   });
 };
-
-export const logout = (req: Request, res: Response) => {
-  res.json("loging out...");
-};
