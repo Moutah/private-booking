@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import * as authController from "./controllers/auth";
+import * as pagesController from "./controllers/pages";
 import * as db from "./db";
 
 const PORT = process.env.PORT || 4000;
@@ -18,10 +19,15 @@ export const start = async () => {
   // connect to DB
   await db.connect();
 
-  // register routes
-  server.get("/", (req, res) => {
-    res.send("Hello World");
-  });
+  // *** Register routes
+
+  // web routes
+  server.get("/", pagesController.main);
+  if (process.env.CLIENT_PATH) {
+    server.use(express.static(process.env.CLIENT_PATH));
+  }
+
+  // api routes
   server.get("/login", authController.login);
   server.get("/logout", authController.logout);
 
