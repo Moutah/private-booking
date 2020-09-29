@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { start as startServer } from "./src/server";
+import * as server from "./src/server";
 
 // load .env
 dotenv.config();
@@ -36,4 +36,8 @@ console.log(`
   *****************************************************************************
 `);
 
-startServer();
+// boot the server
+const PORT = parseInt(process.env.PORT || "4000");
+server.setup().then(() => {
+  server.start(PORT);
+});
