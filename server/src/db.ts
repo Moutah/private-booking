@@ -8,9 +8,15 @@ let connection;
  * @return {Promise<void>}
  */
 export const connect = () =>
-  new Promise((resolve) => {
+  new Promise((resolve, reject) => {
+    // database details not set
+    if (!process.env.DB_HOST) {
+      reject();
+      return;
+    }
+
     // connect to DB
-    mongoose.connect("mongodb://127.0.0.1:27017/private-booking", {
+    mongoose.connect(process.env.DB_HOST, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

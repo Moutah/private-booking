@@ -1,8 +1,12 @@
+import * as dotenv from "dotenv";
 import { start as startServer } from "./src/server";
 
+// load .env
+dotenv.config();
+
+// hello
 const USER = process.env.USERNAME || "";
 const HOST = process.env.HOSTNAME || "";
-
 console.log(`
 
 
@@ -20,16 +24,16 @@ console.log(`
                        |__/                                                    
 
                          
- *******************************************************************************
- *                                                                             *
- * PRIVATE BOOKING                                                             *
- * SERVER                                                                      *
- *                                                                             *
- * Start time: ${new Date().toISOString()}                                        *
- * User: ${USER.padEnd(40, " ")}                              *
- * Host: ${HOST.padEnd(40, " ")}                              *
- *                                                                             *
- *******************************************************************************
+  *****************************************************************************
+  *                                                                           *
+  *  PRIVATE BOOKING                                                          *
+  *  SERVER                                                                   *
+  *                                                                           *
+  *  Start time: ${new Date().toISOString()}                                     *
+  *  User: ${USER.padEnd(40, " ")}                           *
+  *  Host: ${HOST.padEnd(40, " ")}                           *
+  *                                                                           *
+  *****************************************************************************
 `);
 
 startServer();
