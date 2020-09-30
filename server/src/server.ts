@@ -7,6 +7,7 @@ import { webRoutes, staticClientAssets } from "./routes/web";
 import { apiRoutes } from "./routes/api";
 import { Server } from "http";
 import helmet from "helmet";
+import compression from "compression";
 
 export const app: Express = express();
 export let server: Server;
@@ -25,6 +26,7 @@ export const setup = async () => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(helmet());
+  app.use(compression());
 
   // connect to DB
   await db.connect();
