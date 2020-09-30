@@ -13,18 +13,18 @@ describe("Server", () => {
   });
 
   it("can be started with a given port", async () => {
-    const serverSpyListen = jest.spyOn(server.app, "listen");
+    const serverSpyListen = jest.spyOn(server.server, "listen");
     const testPort = 1234;
 
     // server not activated
-    expect(server.activeServer).toBeUndefined();
+    expect(server.server.listening).toBe(false);
 
     // start server
     await server.start(testPort);
 
     // check that server is active and listening to the right port
     expect(serverSpyListen).toHaveBeenCalledWith(testPort, expect.anything());
-    expect(server.activeServer.listening).toBe(true);
+    expect(server.server.listening).toBe(true);
 
     // cleanup
     await server.stop();
@@ -33,15 +33,16 @@ describe("Server", () => {
   it("can be stopped", async () => {
     // start server
     await server.start(1234);
-    expect(server.activeServer.listening).toBe(true);
+    expect(server.server.listening).toBe(true);
 
     // close server
     await server.stop();
-    expect(server.activeServer.listening).toBe(false);
+    expect(server.server.listening).toBe(false);
   });
 
   it("uses express.static assets if CLIENT_BUILD_PATH set in env", async () => {
     const serverSpyUse = jest.spyOn(server.app, "use");
+    const baseUseCount = 4;
 
     // manually unset env
     delete process.env.CLIENT_BUILD_PATH;
@@ -49,7 +50,7 @@ describe("Server", () => {
 
     // setup server
     await server.setup();
-    expect(serverSpyUse).toHaveBeenCalledTimes(3);
+    expect(serverSpyUse).toHaveBeenCalledTimes(baseUseCount);
 
     // manually set env
     process.env.CLIENT_BUILD_PATH = "some value";
@@ -59,6 +60,6 @@ describe("Server", () => {
 
     // setup server
     await server.setup();
-    expect(serverSpyUse).toHaveBeenCalledTimes(4);
+    expect(serverSpyUse).toHaveBeenCalledTimes(baseUseCount + 1);
   });
 });

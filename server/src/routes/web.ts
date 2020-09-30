@@ -1,4 +1,4 @@
-import express, { Handler } from "express";
+import express from "express";
 import * as authController from "../controllers/auth";
 import * as pagesController from "../controllers/pages";
 

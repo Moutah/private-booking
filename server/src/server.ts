@@ -1,11 +1,19 @@
+import https from "https";
+import fs from "fs";
 import express, { Express } from "express";
 import bodyParser from "body-parser";
 import * as db from "./db";
 import { webRoutes, staticClientAssets } from "./routes/web";
+import { apiRoutes } from "./routes/api";
 import { Server } from "http";
 
 export const app: Express = express();
-export let activeServer: Server;
+export let server: Server;
+
+const httpsOptions = {
+  key: fs.readFileSync("./../certs/key.pem"),
+  cert: fs.readFileSync("./../certs/cert.pem"),
+};
 
 /**
  * Start the server by setting up the express app, connecting to the database
@@ -21,10 +29,16 @@ export const setup = async () => {
 
   // register routes
   app.use(webRoutes);
+  app.use("/api", apiRoutes);
+
+  // register static assets
   const staticWebRoutes = staticClientAssets();
   if (staticWebRoutes) {
     app.use(staticWebRoutes);
   }
+
+  // set server
+  server = https.createServer(httpsOptions, app);
 };
 
 /**
@@ -32,7 +46,7 @@ export const setup = async () => {
  */
 export const start = (port: number) =>
   new Promise((resolve) => {
-    activeServer = app.listen(port, () => {
+    server.listen(port, () => {
       console.log("Server is running on Port: " + port);
       resolve();
     });
@@ -43,7 +57,7 @@ export const start = (port: number) =>
  */
 export const stop = () =>
   new Promise((resolve) => {
-    activeServer.close(() => {
+    server.close(() => {
       console.log("Server is stoped");
       resolve();
     });

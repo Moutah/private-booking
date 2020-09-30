@@ -8,7 +8,7 @@ import { Request, Response } from "express";
  * @param {Response} res
  */
 export const main = (req: Request, res: Response) => {
-  const indexFile = path.resolve(`${process.env.CLIENT_PATH}/index.html`);
+  const indexFile = path.resolve(`${process.env.CLIENT_BUILD_PATH}/index.html`);
 
   fs.readFile(indexFile, "utf8", (err, data) => {
     if (err) {
