@@ -5,10 +5,10 @@ let connection;
 /**
  * Connect to MongoDB database. Returns a Promise that resolves when the
  * connection is established.
- * @return {Promise<void>}
  */
 export const connect = () =>
   new Promise((resolve, reject) => {
+    console.log("db", process.env.DB_HOST);
     // database details not set
     if (!process.env.DB_HOST) {
       reject();

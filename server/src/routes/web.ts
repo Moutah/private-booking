@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Handler } from "express";
 import * as authController from "../controllers/auth";
 import * as pagesController from "../controllers/pages";
 
@@ -12,7 +12,12 @@ webRoutes.get("/", pagesController.main);
 webRoutes.get("/login", authController.login);
 webRoutes.get("/logout", authController.logout);
 
-// static assets
-export const staticClientAssets = process.env.CLIENT_PATH
-  ? express.static(process.env.CLIENT_PATH)
-  : null;
+/**
+ * Build an express static handler for fils in CLIENT_BUILD_PATH.
+ * @return {Handler | null}
+ */
+export const staticClientAssets = () => {
+  return process.env.CLIENT_BUILD_PATH
+    ? express.static(process.env.CLIENT_BUILD_PATH)
+    : null;
+};
