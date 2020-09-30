@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
-let connection;
+/**
+ * Connection to the MongoDB database.
+ */
+export let connection: mongoose.Connection;
 
 /**
  * Connect to MongoDB database. Returns a Promise that resolves when the
@@ -8,10 +11,9 @@ let connection;
  */
 export const connect = () =>
   new Promise((resolve, reject) => {
-    console.log("db", process.env.DB_HOST);
     // database details not set
     if (!process.env.DB_HOST) {
-      reject();
+      reject("DB_HOST not set");
       return;
     }
 
@@ -30,8 +32,3 @@ export const connect = () =>
       resolve();
     });
   });
-
-/**
- * Connection to the MongoDB database.
- */
-export default connection;
