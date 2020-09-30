@@ -6,6 +6,7 @@ import * as db from "./db";
 import { webRoutes, staticClientAssets } from "./routes/web";
 import { apiRoutes } from "./routes/api";
 import { Server } from "http";
+import helmet from "helmet";
 
 export const app: Express = express();
 export let server: Server;
@@ -23,6 +24,7 @@ export const setup = async () => {
   // make the app
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(helmet());
 
   // connect to DB
   await db.connect();

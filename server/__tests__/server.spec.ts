@@ -42,7 +42,7 @@ describe("Server", () => {
 
   it("uses express.static assets if CLIENT_BUILD_PATH set in env", async () => {
     const serverSpyUse = jest.spyOn(server.app, "use");
-    const baseUseCount = 4;
+    const baseUseCount = 5;
 
     // manually unset env
     delete process.env.CLIENT_BUILD_PATH;
