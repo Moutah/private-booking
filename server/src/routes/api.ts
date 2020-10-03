@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import * as itemsController from "../controllers/items";
 
 // create router
 export const apiRoutes = express.Router({
@@ -9,3 +10,5 @@ export const apiRoutes = express.Router({
 apiRoutes.get("/ping", (req: Request, res: Response) => {
   res.json("pong");
 });
+
+apiRoutes.get("/items", itemsController.index);

@@ -12,8 +12,8 @@ const User = new mongoose.Schema({
 
   token: String,
 
-  items: [ObjectId],
-  bookings: [ObjectId],
+  items: [{ type: "ObjectId", ref: "Item" }],
+  bookings: [{ type: "ObjectId", ref: "Booking" }],
 });
 
 export interface IUser extends mongoose.Document {

@@ -5,8 +5,8 @@ const Post = new mongoose.Schema({
   images: [String],
   message: String,
 
-  author: ObjectId,
-  item: ObjectId,
+  author: { type: "ObjectId", ref: "User" },
+  item: { type: "ObjectId", ref: "Item" },
 });
 
 export interface IPost extends mongoose.Document {

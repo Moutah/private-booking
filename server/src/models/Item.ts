@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 const Item = new mongoose.Schema({
   name: String,
 
-  iamges: [String],
+  images: [String],
   description: String,
 
   address: {
@@ -16,21 +16,24 @@ const Item = new mongoose.Schema({
     long: Number,
   },
 
-  infos: [{ title: String, message: String, iamge: String }],
+  infos: [{ title: String, message: String, image: String }],
 
   places: [{ name: String, description: String, type: String }],
 
   equipment: [String],
 
-  owner: ObjectId,
-  managers: [ObjectId],
-  bookings: [ObjectId],
+  owner: {
+    type: "ObjectId",
+    ref: "User",
+  },
+  managers: [{ type: "ObjectId", ref: "User" }],
+  bookings: [{ type: "ObjectId", ref: "Booking" }],
 });
 
 export interface IItem extends mongoose.Document {
   name: String;
 
-  iamges: [String];
+  images: [String];
   description: String;
 
   address: {
@@ -42,7 +45,7 @@ export interface IItem extends mongoose.Document {
     long: Number;
   };
 
-  infos: [{ title: String; message: String; iamge: String }];
+  infos: [{ title: String; message: String; image: String }];
 
   places: [{ name: String; description: String; type: String }];
 

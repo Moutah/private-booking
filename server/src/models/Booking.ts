@@ -6,8 +6,8 @@ const Booking = new mongoose.Schema({
   status: String,
   comment: String,
 
-  user: ObjectId,
-  item: ObjectId,
+  user: { type: "ObjectId", ref: "User" },
+  item: { type: "ObjectId", ref: "Item" },
 });
 
 export interface IBooking extends mongoose.Document {

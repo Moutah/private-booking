@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 
 /**
  * Connection to the MongoDB database.
@@ -28,7 +28,16 @@ export const connect = () =>
 
     // confirm connection
     connection.once("open", function () {
-      console.log("MongoDB database connection established successfully");
+      console.log("MongoDB database connection established successfully.");
       resolve();
     });
+  });
+
+/**
+ * Disconnect current `connection`.
+ */
+export const disconnect = () =>
+  new Promise((resolve) => {
+    console.log("MongoDB database connection closed.");
+    mongoose.disconnect(resolve);
   });

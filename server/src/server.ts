@@ -8,6 +8,7 @@ import { apiRoutes } from "./routes/api";
 import { Server } from "http";
 import helmet from "helmet";
 import compression from "compression";
+import "./models";
 
 export const app: Express = express();
 export let server: Server;
@@ -43,6 +44,8 @@ export const setup = async () => {
 
   // set server
   server = https.createServer(httpsOptions, app);
+
+  return server;
 };
 
 /**
@@ -60,7 +63,9 @@ export const start = (port: number) =>
  * Stops the server.
  */
 export const stop = () =>
-  new Promise((resolve) => {
+  new Promise(async (resolve) => {
+    await db.disconnect();
+
     server.close(() => {
       console.log("Server is stoped");
       resolve();
