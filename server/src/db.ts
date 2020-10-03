@@ -28,7 +28,9 @@ export const connect = () =>
 
     // confirm connection
     connection.once("open", function () {
-      console.log("MongoDB database connection established successfully.");
+      if (process.env.NODE_ENV !== "test") {
+        console.log("MongoDB database connection established successfully.");
+      }
       resolve();
     });
   });
@@ -38,6 +40,8 @@ export const connect = () =>
  */
 export const disconnect = () =>
   new Promise((resolve) => {
-    console.log("MongoDB database connection closed.");
+    if (process.env.NODE_ENV !== "test") {
+      console.log("MongoDB database connection closed.");
+    }
     mongoose.disconnect(resolve);
   });

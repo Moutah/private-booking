@@ -46,7 +46,6 @@ describe("Server", () => {
 
     // manually unset env
     delete process.env.CLIENT_BUILD_PATH;
-    // process.env.CLIENT_BUILD_PATH = undefined;
 
     // setup server
     await server.setup();
@@ -61,5 +60,29 @@ describe("Server", () => {
     // setup server
     await server.setup();
     expect(serverSpyUse).toHaveBeenCalledTimes(baseUseCount + 1);
+  });
+
+  it("can be verbose", async () => {
+    const consoleLogSpy = jest.spyOn(console, "log");
+
+    // start and stop server
+    await server.start(1234);
+    await server.stop();
+
+    // no logs in test env
+    expect(consoleLogSpy).not.toHaveBeenCalled();
+
+    // hijack node env
+    process.env.NODE_ENV = "not test lol";
+
+    // start and stop server
+    await server.start(1234);
+    await server.stop();
+
+    // verbose
+    expect(consoleLogSpy).toHaveBeenCalled();
+
+    // restore node env
+    process.env.NODE_ENV = "test";
   });
 });

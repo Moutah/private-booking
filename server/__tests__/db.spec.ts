@@ -3,6 +3,7 @@ import * as db from "../src/db";
 
 jest.mock("mongoose", () => ({
   connect: jest.fn(),
+  disconnect: jest.fn((callback: Function) => callback()),
   connection: {
     once: jest.fn((eventName: string, callback: Function) => callback()),
   },
@@ -38,5 +39,29 @@ describe("Database", () => {
 
     // connection is set
     expect(db.connection).toBeTruthy();
+  });
+
+  it("can be verbose", async () => {
+    const consoleLogSpy = jest.spyOn(console, "log");
+
+    // connect and disconnect db
+    await db.connect();
+    await db.disconnect();
+
+    // no logs in test env
+    expect(consoleLogSpy).not.toHaveBeenCalled();
+
+    // hijack node env
+    process.env.NODE_ENV = "not test lol";
+
+    // connect and disconnect db
+    await db.connect();
+    await db.disconnect();
+
+    // verbose
+    expect(consoleLogSpy).toHaveBeenCalled();
+
+    // restore node env
+    process.env.NODE_ENV = "test";
   });
 });

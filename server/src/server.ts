@@ -54,7 +54,9 @@ export const setup = async () => {
 export const start = (port: number) =>
   new Promise((resolve) => {
     server.listen(port, () => {
-      console.log("Server is running on Port: " + port);
+      if (process.env.NODE_ENV !== "test") {
+        console.log("Server is running on Port: " + port);
+      }
       resolve();
     });
   });
@@ -67,7 +69,9 @@ export const stop = () =>
     await db.disconnect();
 
     server.close(() => {
-      console.log("Server is stoped");
+      if (process.env.NODE_ENV !== "test") {
+        console.log("Server is stoped");
+      }
       resolve();
     });
   });
