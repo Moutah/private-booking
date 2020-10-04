@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 
 const Item = new mongoose.Schema({
-  name: String,
+  name: { type: "String", required: [true, "Item name required"] },
 
   images: [String],
   description: String,
