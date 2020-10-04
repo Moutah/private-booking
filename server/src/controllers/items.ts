@@ -1,6 +1,7 @@
 import Item from "../models/Item";
 import { Request, Response } from "express";
 import { returnError } from "./helpers";
+import slugify from "slugify";
 
 /**
  * Returns all items.
@@ -19,7 +20,10 @@ export const index = async (req: Request, res: Response) => {
  */
 export const insert = async (req: Request, res: Response) => {
   try {
-    let item = new Item(req.body);
+    let item = new Item({
+      ...req.body,
+      slug: slugify(req.body.name || ""),
+    });
     await item.save();
     res.status(201).json(item);
   } catch (err) {

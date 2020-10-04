@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
+import { nextAvailableSlug } from "./helpers";
 
 const Item = new mongoose.Schema({
   name: { type: "String", required: [true, "Item name required"] },
@@ -58,4 +59,19 @@ export interface IItem extends mongoose.Document {
   bookings: ObjectId[];
 }
 
-export default mongoose.model<IItem, mongoose.Model<IItem>>("Item", Item);
+Item.pre<IItem>("save", async function (next) {
+  // set new items' slug to the next available one
+  if (this.isModified("slug")) {
+    const itemsWithSameName = await ItemModel.find({ name: this.name }).select(
+      "slug"
+    );
+    const slugs = itemsWithSameName.map((doc) => doc.slug);
+    this.slug = nextAvailableSlug(this.slug, slugs);
+  }
+
+  next();
+});
+
+const ItemModel = mongoose.model<IItem, mongoose.Model<IItem>>("Item", Item);
+
+export default ItemModel;
