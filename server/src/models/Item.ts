@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 
 const Item = new mongoose.Schema({
   name: { type: "String", required: [true, "Item name required"] },
+  slug: { type: "String", required: true, index: { unique: true } },
 
   images: [String],
   description: String,
@@ -31,25 +32,26 @@ const Item = new mongoose.Schema({
 });
 
 export interface IItem extends mongoose.Document {
-  name: String;
+  name: string;
+  slug: string;
 
-  images: [String];
-  description: String;
+  images: [string];
+  description: string;
 
   address: {
-    street: String;
-    zip: String;
-    city: String;
-    country: String;
+    street: string;
+    zip: string;
+    city: string;
+    country: string;
     lat: Number;
     long: Number;
   };
 
-  infos: [{ title: String; message: String; image: String }];
+  infos: [{ title: string; message: string; image: string }];
 
-  places: [{ name: String; description: String; type: String }];
+  places: [{ name: string; description: string; type: string }];
 
-  equipment: [String];
+  equipment: [string];
 
   owner: ObjectId;
   managers: ObjectId[];

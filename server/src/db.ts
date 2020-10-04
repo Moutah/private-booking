@@ -19,6 +19,7 @@ export const connect = () =>
 
     // connect to DB
     mongoose.connect(process.env.DB_HOST, {
+      useCreateIndex: true,
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

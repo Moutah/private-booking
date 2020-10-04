@@ -52,7 +52,8 @@ export let posts: {
 }));
 
 export const calcBindings = () => {
-  console.log("calculating document bindings...");
+  // shuffle seed
+  faker.seed(Date.now());
 
   // items
   items = items.map((item) => {
