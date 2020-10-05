@@ -2,9 +2,19 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import { nextAvailableSlug } from "./helpers";
 
+// schema
 const ItemSchema = new mongoose.Schema({
-  name: { type: "String", required: [true, "Item name required"] },
-  slug: { type: "String", required: true, index: { unique: true } },
+  name: {
+    type: "String",
+    required: [true, "Item name required"],
+    immutable: true,
+  },
+  slug: {
+    type: "String",
+    required: true,
+    index: { unique: true },
+    immutable: true,
+  },
 
   images: [String],
   description: String,
@@ -60,15 +70,10 @@ export interface IItem extends mongoose.Document {
   bookings: ObjectId[];
 }
 
-// Static methods
+// static methods
 ItemSchema.statics.findBySlug = async function (slug: string): Promise<IItem> {
   return this.findOne({ slug }).populate("managers").exec();
 };
-
-// model
-export interface IItemModel extends mongoose.Model<IItem> {
-  findBySlug(slug: string): Promise<IItem>;
-}
 
 // document middleware
 ItemSchema.pre<IItem>("save", async function (next) {
@@ -84,6 +89,10 @@ ItemSchema.pre<IItem>("save", async function (next) {
   next();
 });
 
+// model
 const ItemModel = mongoose.model<IItem, IItemModel>("Item", ItemSchema);
+export interface IItemModel extends mongoose.Model<IItem> {
+  findBySlug(slug: string): Promise<IItem>;
+}
 
 export default ItemModel;
