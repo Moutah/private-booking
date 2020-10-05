@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
 
@@ -14,3 +15,4 @@ apiRoutes.get("/ping", (req: Request, res: Response) => {
 
 apiRoutes.use("/items", itemsRouter);
 apiRoutes.use("/items/:itemSlug/posts", postsRouter);
+apiRoutes.use("/items/:itemSlug/bookings", bookingsRouter);

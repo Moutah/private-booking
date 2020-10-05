@@ -16,7 +16,7 @@ export const index = async (req: Request, res: Response) => {
 };
 
 /**
- * Inserts an item in the database with values from the given `req` body.
+ * Inserts an item in the database with values from the given `req.body`.
  */
 export const insert = async (req: Request, res: Response) => {
   try {
@@ -36,7 +36,7 @@ export const insert = async (req: Request, res: Response) => {
 
 /**
  * Get a specific item from the database with slug matching the one in given
- * `req`.
+ * `req.params`.
  */
 export const get = async (req: Request, res: Response) => {
   try {
