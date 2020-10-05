@@ -12,5 +12,5 @@ export = users.map((userSeed) => ({
 
   token: faker.random.alphaNumeric(64),
 
-  profileImage: "",
+  profileImage: null,
 }));

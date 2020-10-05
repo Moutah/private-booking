@@ -10,7 +10,7 @@ export = items.map((itemSeed) => {
     name: itemName,
     slug: slugify(itemName),
 
-    pictures: [],
+    images: [],
 
     description: faker.lorem.paragraph(),
 

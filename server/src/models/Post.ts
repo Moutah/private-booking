@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
+import { ImageSchema, IImage } from "./Image";
 
 const Post = new mongoose.Schema({
-  images: [String],
+  images: [ImageSchema],
   message: { type: String, required: [true, "Post message is required."] },
 
   author: { type: "ObjectId", ref: "User", immutable: true },
@@ -12,7 +13,7 @@ const Post = new mongoose.Schema({
 });
 
 export interface IPost extends mongoose.Document {
-  images: [string];
+  images: [IImage];
   message: string;
 
   author: ObjectId;

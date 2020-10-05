@@ -1,25 +1,25 @@
 // https://medium.com/@agentwhs/complete-guide-for-typescript-for-mongoose-for-node-js-8cc0a7e470c1
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
+import { IImage, ImageSchema } from "./Image";
 
 const User = new mongoose.Schema({
-  name: String,
-  hash: String,
-  profileImage: String,
+  name: { type: String, required: [true, "User name is required."] },
+  hash: { type: String, select: false },
+  profileImage: ImageSchema,
 
-  email: String,
-  password: String,
+  email: { type: String, required: [true, "User email is required."] },
+  password: { type: String, select: false },
 
-  token: String,
+  token: { type: String, select: false },
 
   items: [{ type: "ObjectId", ref: "Item" }],
-  bookings: [{ type: "ObjectId", ref: "Booking" }],
 });
 
 export interface IUser extends mongoose.Document {
   name: String;
   hash: String;
-  profileImage: String;
+  profileImage: IImage;
 
   email: String;
   password: String;
@@ -27,7 +27,6 @@ export interface IUser extends mongoose.Document {
   token: String;
 
   items: ObjectId[];
-  bookings: ObjectId[];
 }
 
 export default mongoose.model<IUser, mongoose.Model<IUser>>("User", User);
