@@ -22,7 +22,7 @@ const ItemSchema = new mongoose.Schema({
 
   places: [{ name: String, description: String, type: String }],
 
-  equipment: [String],
+  equipments: [String],
 
   owner: {
     type: "ObjectId",
@@ -53,7 +53,7 @@ export interface IItem extends mongoose.Document {
 
   places: [{ name: string; description: string; type: string }];
 
-  equipment: [string];
+  equipments: [string];
 
   owner: ObjectId;
   managers: ObjectId[];
