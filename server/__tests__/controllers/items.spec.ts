@@ -224,4 +224,46 @@ describe("Items", () => {
       expect(dbItem.address.long).toBe(2);
     });
   });
+
+  // *** Remove
+
+  describe("remove", () => {
+    // create a model we'll work with
+    let testItem: IItem;
+    beforeAll(async () => {
+      testItem = new Item({ name: "test item", slug: "test-item" });
+      await testItem.save();
+    });
+
+    it(
+      "can handle server error",
+      testServerErrorHandling(
+        "POST",
+        "/api/items/test-item/delete",
+        Item,
+        "findBySlug"
+      )
+    );
+
+    it(
+      "can handle not found",
+      testNotFoundErrorHandling(
+        "POST",
+        "/api/items/this-item-does-not-exist/delete"
+      )
+    );
+
+    it("can delete item", async () => {
+      // run a request that will not found
+      const response = await supertest(server.server)
+        .post("/api/items/test-item/delete")
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({});
+
+      // check item is not in database anymore
+      const dbItem = await Item.findById(testItem._id);
+      expect(dbItem).toBe(null);
+    });
+  });
 });

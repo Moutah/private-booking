@@ -81,3 +81,26 @@ export const update = async (req: Request, res: Response) => {
     res = returnError("items.update", err, res);
   }
 };
+
+/**
+ * Remove a specific item from the database with slug matching the one in given
+ * `req.params`.
+ */
+export const remove = async (req: Request, res: Response) => {
+  try {
+    let item = await Item.findBySlug(req.params.slug);
+
+    // not found
+    if (!item) {
+      res = returnNotFoundError(res);
+      return;
+    }
+
+    // remove item
+    await item.remove();
+
+    res.status(200).send();
+  } catch (err) {
+    res = returnError("items.remove", err, res);
+  }
+};
