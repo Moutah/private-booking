@@ -1,6 +1,6 @@
 import supertest from "supertest";
 import * as server from "../../src/server";
-import Item, { IItem } from "../../src/models/Item";
+import Item from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 
 describe("Items", () => {
@@ -43,9 +43,9 @@ describe("Items", () => {
       expect(response.status).toBe(400);
       expect(response.body).toMatchObject({
         errors: [
-          { message: "Item name required", type: "required", path: "name" },
+          { message: "Item name is required.", type: "required", path: "name" },
           {
-            message: "Path `slug` is required.",
+            message: "Item slug is required.",
             path: "slug",
             type: "required",
             value: "",
@@ -101,14 +101,9 @@ describe("Items", () => {
 
   describe("get", () => {
     // create and cleanup a model we'll work with
-    let testItem: IItem;
-    beforeAll(async () => {
-      testItem = new Item({ name: "test item", slug: "test-item" });
-      await testItem.save();
-    });
-    afterAll(async () => {
-      await Item.deleteMany({ name: "test item" });
-    });
+    let testItem = new Item({ name: "test item", slug: "test-item" });
+    beforeAll(async () => await testItem.save());
+    afterAll(async () => await Item.deleteMany({ name: "test item" }));
 
     it(
       "can handle server error",
@@ -121,7 +116,7 @@ describe("Items", () => {
     );
 
     it("can get item", async () => {
-      // run a request that will not found
+      // run a request that will work
       const response = await supertest(server.server)
         .get("/api/items/test-item")
         .trustLocalhost();
@@ -134,14 +129,9 @@ describe("Items", () => {
 
   describe("update", () => {
     // create and cleanup a model we'll work with
-    let testItem: IItem;
-    beforeAll(async () => {
-      testItem = new Item({ name: "test item", slug: "test-item" });
-      await testItem.save();
-    });
-    afterAll(async () => {
-      await Item.deleteMany({ name: "test item" });
-    });
+    let testItem = new Item({ name: "test item", slug: "test-item" });
+    beforeAll(async () => await testItem.save());
+    afterAll(async () => await Item.deleteMany({ name: "test item" }));
 
     it(
       "can handle server error",
@@ -159,7 +149,7 @@ describe("Items", () => {
     );
 
     it("can update item", async () => {
-      // run a request that will not found
+      // run a request that will work
       const response = await supertest(server.server)
         .post("/api/items/test-item")
         .send({
@@ -199,7 +189,7 @@ describe("Items", () => {
     });
 
     it("can update item address partially", async () => {
-      // run a request that will not found
+      // run a request that will work
       const response = await supertest(server.server)
         .post("/api/items/test-item")
         .send({
@@ -229,11 +219,8 @@ describe("Items", () => {
 
   describe("remove", () => {
     // create a model we'll work with
-    let testItem: IItem;
-    beforeAll(async () => {
-      testItem = new Item({ name: "test item", slug: "test-item" });
-      await testItem.save();
-    });
+    let testItem = new Item({ name: "test item", slug: "test-item" });
+    beforeAll(async () => await testItem.save());
 
     it(
       "can handle server error",
@@ -254,7 +241,7 @@ describe("Items", () => {
     );
 
     it("can delete item", async () => {
-      // run a request that will not found
+      // run a request that will work
       const response = await supertest(server.server)
         .post("/api/items/test-item/delete")
         .trustLocalhost();

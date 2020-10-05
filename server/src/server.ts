@@ -8,7 +8,10 @@ import { apiRoutes } from "./routes/api";
 import { Server } from "http";
 import helmet from "helmet";
 import compression from "compression";
-import "./models";
+import "./models/Booking";
+import "./models/Item";
+import "./models/Post";
+import "./models/User";
 
 export const app: Express = express();
 export let server: Server;

@@ -7,12 +7,12 @@ import { NotFoundError } from "../controllers/not-found-error";
 const ItemSchema = new mongoose.Schema({
   name: {
     type: "String",
-    required: [true, "Item name required"],
+    required: [true, "Item name is required."],
     immutable: true,
   },
   slug: {
     type: "String",
-    required: true,
+    required: [true, "Item slug is required."],
     index: { unique: true },
     immutable: true,
   },
@@ -35,10 +35,7 @@ const ItemSchema = new mongoose.Schema({
 
   equipments: [String],
 
-  owner: {
-    type: "ObjectId",
-    ref: "User",
-  },
+  owner: { type: "ObjectId", ref: "User" },
   managers: [{ type: "ObjectId", ref: "User" }],
   bookings: [{ type: "ObjectId", ref: "Booking" }],
 });
