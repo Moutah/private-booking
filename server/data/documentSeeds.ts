@@ -23,12 +23,10 @@ export let items: {
   _id: ObjectId;
   owner: ObjectId | null;
   managers: ObjectId[];
-  bookings: ObjectId[];
 }[] = [...Array(ITEMS_COUNT).keys()].map((i) => ({
   _id: getObjectId(`items${i}`),
   owner: null,
   managers: [],
-  bookings: [],
 }));
 
 export let bookings: {
@@ -94,16 +92,6 @@ export const calcBindings = () => {
 
     // pick one of its items
     const itemId = faker.random.arrayElement(user.items);
-
-    // bind this booking to them
-    user.bookings.push(booking._id);
-    // console.log({ items, itemId });
-    const item = items.find(
-      (item) => item._id.toHexString() == itemId.toHexString()
-    );
-    if (item) {
-      item.bookings.push(booking._id);
-    }
 
     // there you go
     return {

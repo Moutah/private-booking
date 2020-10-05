@@ -37,7 +37,6 @@ const ItemSchema = new mongoose.Schema({
 
   owner: { type: "ObjectId", ref: "User" },
   managers: [{ type: "ObjectId", ref: "User" }],
-  bookings: [{ type: "ObjectId", ref: "Booking" }],
 });
 
 // interface
@@ -65,7 +64,6 @@ export interface IItem extends mongoose.Document {
 
   owner: ObjectId;
   managers: ObjectId[];
-  bookings: ObjectId[];
 }
 
 // static methods
