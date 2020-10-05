@@ -38,3 +38,12 @@ export const returnValidationError = (error: any, response: Response) => {
   };
   return response.status(400).send(output);
 };
+
+/**
+ * Handles not found error by setting the given `response` to status 404 with
+ * "Not found" as message.
+ * @param response
+ */
+export const returnNotFoundError = (response: Response) => {
+  return response.status(404).json("Not found");
+};

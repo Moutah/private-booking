@@ -1,6 +1,6 @@
 import Item from "../models/Item";
 import { Request, Response } from "express";
-import { returnError } from "./helpers";
+import { returnError, returnNotFoundError } from "./helpers";
 import slugify from "slugify";
 
 /**
@@ -8,7 +8,7 @@ import slugify from "slugify";
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const items = await Item.find().populate("owner managers");
+    const items = await Item.find();
     res.json(items);
   } catch (err) {
     res = returnError("items.index", err, res);
@@ -28,5 +28,22 @@ export const insert = async (req: Request, res: Response) => {
     res.status(201).json(item);
   } catch (err) {
     res = returnError("items.insert", err, res);
+  }
+};
+
+/**
+ * Get a specific item from the database with slug matching the one in given `req`.
+ */
+export const get = async (req: Request, res: Response) => {
+  try {
+    let item = await Item.findBySlug(req.params.slug);
+
+    if (item) {
+      res.status(200).json(item);
+    } else {
+      res = returnNotFoundError(res);
+    }
+  } catch (err) {
+    res = returnError("items.get", err, res);
   }
 };

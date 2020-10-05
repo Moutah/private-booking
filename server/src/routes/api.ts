@@ -13,3 +13,4 @@ apiRoutes.get("/ping", (req: Request, res: Response) => {
 
 apiRoutes.get("/items", itemsController.index);
 apiRoutes.post("/items", itemsController.insert);
+apiRoutes.get("/items/:slug", itemsController.get);

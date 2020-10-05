@@ -1,6 +1,6 @@
 import supertest from "supertest";
 import * as server from "../../src/server";
-import Item from "../../src/models/Item";
+import Item, { IItem } from "../../src/models/Item";
 
 describe("Items", () => {
   beforeAll(server.setup);
@@ -34,8 +34,6 @@ describe("Items", () => {
     // cleanup inserted items
     afterAll(async () => {
       await Item.deleteMany({ name: "item name" });
-      // const items = await Item.find({ name: "item name" });
-      // items.forEach(async (item) => await item.deleteOne());
     });
 
     it("won't store invalid request", async () => {
@@ -100,6 +98,50 @@ describe("Items", () => {
       // response is successful with incremented slug
       expect(response.status).toBe(201);
       expect(response.body.slug).toBe("item-name-3");
+    });
+  });
+
+  describe("get", () => {
+    // create and cleanup a model we'll work with
+    let testItem: IItem;
+    beforeAll(async () => {
+      testItem = new Item({ name: "test item", slug: "test-item" });
+      await testItem.save();
+    });
+    afterAll(async () => {
+      await Item.deleteMany({ name: "test item" });
+    });
+
+    it("can handle server error", async () => {
+      // hijack Item.findBySlug to have a server error and console.log to mute
+      jest.spyOn(Item, "findBySlug").mockImplementationOnce(() => {
+        throw new Error("server error");
+      });
+      jest.spyOn(console, "log").mockImplementationOnce(() => {});
+
+      // run a request that will fail
+      const response = await supertest(server.server)
+        .get("/api/items/test-item")
+        .trustLocalhost();
+      expect(response.status).toBe(500);
+    });
+
+    it("can handle not found", async () => {
+      // run a request that will not found
+      const response = await supertest(server.server)
+        .get("/api/items/this-item-does-not-exist")
+        .trustLocalhost();
+      expect(response.status).toBe(404);
+      expect(response.body).toBe("Not found");
+    });
+
+    it("can get item", async () => {
+      // run a request that will not found
+      const response = await supertest(server.server)
+        .get("/api/items/test-item")
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+      expect(response.body._id).toBe(testItem._id.toHexString());
     });
   });
 });
