@@ -6,6 +6,11 @@ export const returnError = (source: string, error: any, response: Response) => {
     return returnValidationError(error, response);
   }
 
+  // not found error
+  if (error.name === "NotFoundError") {
+    return returnNotFoundError(response);
+  }
+
   // unhandled error
   return returnServerError(source, error, response);
 };

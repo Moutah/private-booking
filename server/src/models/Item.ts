@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import { nextAvailableSlug } from "./helpers";
+import { NotFoundError } from "../controllers/not-found-error";
 
 // schema
 const ItemSchema = new mongoose.Schema({
@@ -72,7 +73,13 @@ export interface IItem extends mongoose.Document {
 
 // static methods
 ItemSchema.statics.findBySlug = async function (slug: string): Promise<IItem> {
-  return this.findOne({ slug }).populate("managers").exec();
+  const item = await this.findOne({ slug }).populate("managers").exec();
+
+  if (!item) {
+    throw new NotFoundError();
+  }
+
+  return item;
 };
 
 // document middleware
@@ -92,6 +99,10 @@ ItemSchema.pre<IItem>("save", async function (next) {
 // model
 const ItemModel = mongoose.model<IItem, IItemModel>("Item", ItemSchema);
 export interface IItemModel extends mongoose.Model<IItem> {
+  /**
+   * Find the item with given `slug`.
+   * @throws NotFoundError
+   */
   findBySlug(slug: string): Promise<IItem>;
 }
 

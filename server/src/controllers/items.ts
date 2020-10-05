@@ -1,6 +1,6 @@
 import Item from "../models/Item";
 import { Request, Response } from "express";
-import { returnError, returnNotFoundError } from "./helpers";
+import { returnError } from "./helpers";
 import slugify from "slugify";
 
 /**
@@ -20,11 +20,14 @@ export const index = async (req: Request, res: Response) => {
  */
 export const insert = async (req: Request, res: Response) => {
   try {
+    // create item
     let item = new Item({
       ...req.body,
       slug: slugify(req.body.name || ""),
     });
     await item.save();
+
+    // return item
     res.status(201).json(item);
   } catch (err) {
     res = returnError("items.insert", err, res);
@@ -38,13 +41,6 @@ export const insert = async (req: Request, res: Response) => {
 export const get = async (req: Request, res: Response) => {
   try {
     let item = await Item.findBySlug(req.params.slug);
-
-    // not found
-    if (!item) {
-      res = returnNotFoundError(res);
-      return;
-    }
-
     res.status(200).json(item);
   } catch (err) {
     res = returnError("items.get", err, res);
@@ -58,12 +54,6 @@ export const get = async (req: Request, res: Response) => {
 export const update = async (req: Request, res: Response) => {
   try {
     let item = await Item.findBySlug(req.params.slug);
-
-    // not found
-    if (!item) {
-      res = returnNotFoundError(res);
-      return;
-    }
 
     // update item
     item.description = req.body.description;
@@ -89,12 +79,6 @@ export const update = async (req: Request, res: Response) => {
 export const remove = async (req: Request, res: Response) => {
   try {
     let item = await Item.findBySlug(req.params.slug);
-
-    // not found
-    if (!item) {
-      res = returnNotFoundError(res);
-      return;
-    }
 
     // remove item
     await item.remove();
