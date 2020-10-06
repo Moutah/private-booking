@@ -5,7 +5,7 @@ import Item from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 
 describe("Posts", () => {
-  let item = new Item({ name: "base item", slug: "base-item" });
+  let item = new Item({ name: "base item posts", slug: "base-item-posts" });
   const baseUrl = `/api/items/${item.slug}`;
 
   beforeAll(async () => {
@@ -22,7 +22,7 @@ describe("Posts", () => {
   describe("index", () => {
     it(
       "can handle server error",
-      testServerErrorHandling("GET", `${baseUrl}/posts`, Post, "find")
+      testServerErrorHandling(`${baseUrl}/posts`, Post, "find")
     );
 
     it("can return list of posts", async () => {
@@ -39,7 +39,7 @@ describe("Posts", () => {
   describe("insert", () => {
     // cleanup inserted posts
     afterAll(async () => {
-      await Post.deleteMany({ message: "Le test message" });
+      await Post.deleteMany({});
     });
 
     it("won't store invalid request", async () => {
@@ -85,13 +85,12 @@ describe("Posts", () => {
       await testPost.save();
     });
     afterAll(async () => {
-      await Post.deleteMany({ message: "Le test message" });
+      await Post.deleteMany({});
     });
 
     it(
       "can handle server error",
       testServerErrorHandling(
-        "GET",
         `${baseUrl}/posts/${testPost._id}`,
         Post,
         "findById"
@@ -125,7 +124,7 @@ describe("Posts", () => {
       await testPost.save();
     });
     afterAll(async () => {
-      await Post.deleteMany({ message: "Le test message" });
+      await Post.deleteMany({});
     });
 
     it("can handle server error", async () => {

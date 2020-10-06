@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "start": "node --inspect=5858 -r ts-node/register ./index.ts",
     "dev": "nodemon",
     "build": "tsc",
-    "reset-db": "node seed-db"
+    "seed-db": "node seed-db",
+    "clear-db": "node clear-db"
   },
   "nodemonConfig": {
     "ignore": [

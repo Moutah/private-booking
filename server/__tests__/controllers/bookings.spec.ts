@@ -5,7 +5,10 @@ import Item from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 
 describe("Bookings", () => {
-  let item = new Item({ name: "base item", slug: "base-item" });
+  let item = new Item({
+    name: "base item bookings",
+    slug: "base-item-bookings",
+  });
   const baseUrl = `/api/items/${item.slug}`;
 
   beforeAll(async () => {
@@ -22,7 +25,7 @@ describe("Bookings", () => {
   describe("index", () => {
     it(
       "can handle server error",
-      testServerErrorHandling("GET", `${baseUrl}/bookings`, Booking, "find")
+      testServerErrorHandling(`${baseUrl}/bookings`, Booking, "find")
     );
 
     it("can return list of bookings", async () => {
@@ -39,7 +42,7 @@ describe("Bookings", () => {
   describe("insert", () => {
     // cleanup inserted bookings
     afterAll(async () => {
-      await Booking.deleteMany({ message: "Le test message" });
+      await Booking.deleteMany({});
     });
 
     it("won't store invalid request", async () => {
@@ -90,13 +93,12 @@ describe("Bookings", () => {
       await testBooking.save();
     });
     afterAll(async () => {
-      await Booking.deleteMany({ message: "Le test message" });
+      await Booking.deleteMany({});
     });
 
     it(
       "can handle server error",
       testServerErrorHandling(
-        "GET",
         `${baseUrl}/bookings/${testBooking._id}`,
         Booking,
         "findById"
@@ -133,7 +135,7 @@ describe("Bookings", () => {
       await testBooking.save();
     });
     afterAll(async () => {
-      await Booking.deleteMany({ message: "Le test message" });
+      await Booking.deleteMany({});
     });
 
     it("can handle server error", async () => {

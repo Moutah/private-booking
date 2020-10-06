@@ -12,7 +12,7 @@ describe("Items", () => {
   describe("index", () => {
     it(
       "can handle server error",
-      testServerErrorHandling("GET", "/api/items", Item, "find")
+      testServerErrorHandling("/api/items", Item, "find")
     );
 
     it("can return list of items", async () => {
@@ -29,7 +29,7 @@ describe("Items", () => {
   describe("insert", () => {
     // cleanup inserted items
     afterAll(async () => {
-      await Item.deleteMany({ name: "item name" });
+      await Item.deleteMany({});
     });
 
     it("won't store invalid request", async () => {
@@ -103,11 +103,11 @@ describe("Items", () => {
     // create and cleanup a model we'll work with
     let testItem = new Item({ name: "test item", slug: "test-item" });
     beforeAll(async () => await testItem.save());
-    afterAll(async () => await Item.deleteMany({ name: "test item" }));
+    afterAll(async () => await Item.deleteMany({}));
 
     it(
       "can handle server error",
-      testServerErrorHandling("GET", "/api/items/test-item", Item, "findBySlug")
+      testServerErrorHandling("/api/items/test-item", Item, "findBySlug")
     );
 
     it(
@@ -131,7 +131,7 @@ describe("Items", () => {
     // create and cleanup a model we'll work with
     let testItem = new Item({ name: "test item", slug: "test-item" });
     beforeAll(async () => await testItem.save());
-    afterAll(async () => await Item.deleteMany({ name: "test item" }));
+    afterAll(async () => await Item.deleteMany({}));
 
     it("can handle server error", async () => {
       // hijack Item.findBySlug to have a server error

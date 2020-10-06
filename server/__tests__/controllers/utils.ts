@@ -2,29 +2,25 @@ import supertest from "supertest";
 import * as server from "../../src/server";
 
 /**
- * Test that a call to given `url` with given `method` handles a server error
- * properly. To simulate a server error, the `failMethod` of given `obj` is
- * hijacked to throw an Error.
+ * Test that a GET call to given `url` handles a server error  properly. To
+ * simulate a server error, the `failMethod` of given `obj` is hijacked to
+ * throw an Error.
  */
 export const testServerErrorHandling = (
-  method: string,
   url: string,
   obj: any,
   failMethod: string
 ) => async () => {
-  // hijack Item.findBySlug to have a server error and console.log to mute
+  // hijack Item.findBySlug to have a server error
   jest.spyOn(obj, failMethod).mockImplementationOnce(() => {
     throw new Error("TEST server error");
   });
+
+  // mute console
   jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
   // run a request that will fail
-  const request = supertest(server.server);
-  const response = await (method.toLowerCase() === "post"
-    ? request.post(url)
-    : request.get(url)
-  ).trustLocalhost();
-
+  const response = await supertest(server.server).get(url).trustLocalhost();
   expect(response.status).toBe(500);
 };
 
