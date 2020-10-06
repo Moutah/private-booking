@@ -1,6 +1,6 @@
 import supertest from "supertest";
 import * as server from "../../src/server";
-import Item from "../../src/models/Item";
+import Item, { IItem } from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 
 describe("Items", () => {
@@ -133,15 +133,26 @@ describe("Items", () => {
     beforeAll(async () => await testItem.save());
     afterAll(async () => await Item.deleteMany({ name: "test item" }));
 
-    it(
-      "can handle server error",
-      testServerErrorHandling(
-        "POST",
-        "/api/items/test-item",
-        Item,
-        "findBySlug"
-      )
-    );
+    it("can handle server error", async () => {
+      // hijack Item.findBySlug to have a server error and console.log to mute
+      jest.spyOn(Item, "findBySlug").mockImplementationOnce(
+        (slug: string): Promise<IItem> =>
+          new Promise((resolve, reject) => {
+            let item = new Item();
+            item.save = () => {
+              throw new Error("TEST server error");
+            };
+            resolve(item);
+          })
+      );
+      jest.spyOn(console, "error").mockImplementationOnce(() => {});
+
+      // run a request that will fail
+      const response = await supertest(server.server)
+        .post("/api/items/test-item")
+        .trustLocalhost();
+      expect(response.status).toBe(500);
+    });
 
     it(
       "can handle not found",
@@ -222,15 +233,26 @@ describe("Items", () => {
     let testItem = new Item({ name: "test item", slug: "test-item" });
     beforeAll(async () => await testItem.save());
 
-    it(
-      "can handle server error",
-      testServerErrorHandling(
-        "POST",
-        "/api/items/test-item/delete",
-        Item,
-        "findBySlug"
-      )
-    );
+    it("can handle server error", async () => {
+      // hijack Item.findBySlug to have a server error and console.log to mute
+      jest.spyOn(Item, "findBySlug").mockImplementationOnce(
+        (slug: string): Promise<IItem> =>
+          new Promise((resolve, reject) => {
+            let item = new Item();
+            item.remove = () => {
+              throw new Error("TEST server error");
+            };
+            resolve(item);
+          })
+      );
+      jest.spyOn(console, "error").mockImplementationOnce(() => {});
+
+      // run a request that will fail
+      const response = await supertest(server.server)
+        .post("/api/items/test-item/delete")
+        .trustLocalhost();
+      expect(response.status).toBe(500);
+    });
 
     it(
       "can handle not found",

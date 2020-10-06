@@ -1,4 +1,4 @@
-import Item from "../models/Item";
+import Item, { IItem } from "../models/Item";
 import { NextFunction, Request, Response } from "express";
 import slugify from "slugify";
 
@@ -45,13 +45,8 @@ export const insert = async (
  * Get a specific item from the database with slug matching the one in given
  * `req.params`.
  */
-export const get = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    let item = await Item.findBySlug(req.params.slug);
-    res.status(200).json(item);
-  } catch (err) {
-    next(err);
-  }
+export const get = async (req: Request, res: Response) => {
+  res.status(200).json(req.item);
 };
 
 /**
@@ -64,7 +59,7 @@ export const update = async (
   next: NextFunction
 ) => {
   try {
-    let item = await Item.findBySlug(req.params.slug);
+    let item = req.item as IItem;
 
     // update item
     item.description = req.body.description;
@@ -93,10 +88,8 @@ export const remove = async (
   next: NextFunction
 ) => {
   try {
-    let item = await Item.findBySlug(req.params.slug);
-
     // remove item
-    await item.remove();
+    await (req.item as IItem).remove();
 
     res.status(200).send();
   } catch (err) {

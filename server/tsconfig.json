@@ -6,7 +6,7 @@
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
-    "typeRoots": ["@types/custom.express.d.ts", "./node_modules/@types"]
+    "typeRoots": ["./src/@types", "./node_modules/@types"]
   },
   "include": ["__tests__/**/*.ts", "src/**/*.ts", "index.ts", "jest-setup.ts"],
   "exclude": ["node_modules", ".vscode"]
