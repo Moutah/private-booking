@@ -1,27 +1,34 @@
 import Post from "../models/Post";
 import Item from "../models/Item";
-import { Request, Response } from "express";
-import { returnError } from "./helpers";
-import { NotFoundError } from "./not-found-error";
+import { NextFunction, Request, Response } from "express";
+import { NotFoundError } from "../errors";
 
 /**
  * Returns all posts.
  */
-export const index = async (req: Request, res: Response) => {
+export const index = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let item = await Item.findBySlug(req.params.itemSlug);
 
     const posts = await Post.find({ item: item._id });
     res.json(posts);
   } catch (err) {
-    res = returnError("posts.index", err, res);
+    next(err);
   }
 };
 
 /**
  * Inserts an post in the database with values from the given `req.body`.
  */
-export const insert = async (req: Request, res: Response) => {
+export const insert = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let item = await Item.findBySlug(req.params.itemSlug);
 
@@ -36,7 +43,7 @@ export const insert = async (req: Request, res: Response) => {
     // return post
     res.status(201).json(post);
   } catch (err) {
-    res = returnError("posts.insert", err, res);
+    next(err);
   }
 };
 
@@ -44,7 +51,7 @@ export const insert = async (req: Request, res: Response) => {
  * Get a specific post from the database with id matching the one in given
  * `req.params`.
  */
-export const get = async (req: Request, res: Response) => {
+export const get = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let post = await Post.findById(req.params.postId);
 
@@ -54,7 +61,7 @@ export const get = async (req: Request, res: Response) => {
 
     res.status(200).json(post);
   } catch (err) {
-    res = returnError("posts.get", err, res);
+    next(err);
   }
 };
 
@@ -62,7 +69,11 @@ export const get = async (req: Request, res: Response) => {
  * Update a specific post from the database with slug matching the one in given
  * `req.params` with the content in `req.body`.
  */
-export const update = async (req: Request, res: Response) => {
+export const update = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let post = await Post.findById(req.params.postId);
 
@@ -76,7 +87,7 @@ export const update = async (req: Request, res: Response) => {
 
     res.status(200).send();
   } catch (err) {
-    res = returnError("posts.update", err, res);
+    next(err);
   }
 };
 
@@ -84,7 +95,11 @@ export const update = async (req: Request, res: Response) => {
  * Remove a specific post from the database with slug matching the one in given
  * `req.params`.
  */
-export const remove = async (req: Request, res: Response) => {
+export const remove = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let post = await Post.findById(req.params.postId);
 
@@ -97,6 +112,6 @@ export const remove = async (req: Request, res: Response) => {
 
     res.status(200).send();
   } catch (err) {
-    res = returnError("posts.remove", err, res);
+    next(err);
   }
 };

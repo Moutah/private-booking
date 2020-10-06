@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import { nextAvailableSlug } from "./helpers";
-import { NotFoundError } from "../controllers/not-found-error";
+import { NotFoundError } from "../errors";
 import { ImageSchema, IImage } from "./Image";
 import { IInfo, InfoSchema } from "./Info";
 import { IPlace, PlaceSchema } from "./Place";

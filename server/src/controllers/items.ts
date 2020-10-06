@@ -1,24 +1,31 @@
 import Item from "../models/Item";
-import { Request, Response } from "express";
-import { returnError } from "./helpers";
+import { NextFunction, Request, Response } from "express";
 import slugify from "slugify";
 
 /**
  * Returns all items.
  */
-export const index = async (req: Request, res: Response) => {
+export const index = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const items = await Item.find();
     res.json(items);
   } catch (err) {
-    res = returnError("items.index", err, res);
+    next(err);
   }
 };
 
 /**
  * Inserts an item in the database with values from the given `req.body`.
  */
-export const insert = async (req: Request, res: Response) => {
+export const insert = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // create item
     let item = new Item({
@@ -30,7 +37,7 @@ export const insert = async (req: Request, res: Response) => {
     // return item
     res.status(201).json(item);
   } catch (err) {
-    res = returnError("items.insert", err, res);
+    next(err);
   }
 };
 
@@ -38,12 +45,12 @@ export const insert = async (req: Request, res: Response) => {
  * Get a specific item from the database with slug matching the one in given
  * `req.params`.
  */
-export const get = async (req: Request, res: Response) => {
+export const get = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let item = await Item.findBySlug(req.params.slug);
     res.status(200).json(item);
   } catch (err) {
-    res = returnError("items.get", err, res);
+    next(err);
   }
 };
 
@@ -51,7 +58,11 @@ export const get = async (req: Request, res: Response) => {
  * Update a specific item from the database with slug matching the one in given
  * `req.params` with the content in `req.body`.
  */
-export const update = async (req: Request, res: Response) => {
+export const update = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let item = await Item.findBySlug(req.params.slug);
 
@@ -68,7 +79,7 @@ export const update = async (req: Request, res: Response) => {
 
     res.status(200).send();
   } catch (err) {
-    res = returnError("items.update", err, res);
+    next(err);
   }
 };
 
@@ -76,7 +87,11 @@ export const update = async (req: Request, res: Response) => {
  * Remove a specific item from the database with slug matching the one in given
  * `req.params`.
  */
-export const remove = async (req: Request, res: Response) => {
+export const remove = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let item = await Item.findBySlug(req.params.slug);
 
@@ -85,6 +100,6 @@ export const remove = async (req: Request, res: Response) => {
 
     res.status(200).send();
   } catch (err) {
-    res = returnError("items.remove", err, res);
+    next(err);
   }
 };

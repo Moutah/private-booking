@@ -14,9 +14,9 @@ export const testServerErrorHandling = (
 ) => async () => {
   // hijack Item.findBySlug to have a server error and console.log to mute
   jest.spyOn(obj, failMethod).mockImplementationOnce(() => {
-    throw new Error("server error");
+    throw new Error("TEST server error");
   });
-  jest.spyOn(console, "log").mockImplementationOnce(() => {});
+  jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
   // run a request that will fail
   const request = supertest(server.server);
@@ -24,7 +24,7 @@ export const testServerErrorHandling = (
     ? request.post(url)
     : request.get(url)
   ).trustLocalhost();
-  // console.log({ url, response });
+
   expect(response.status).toBe(500);
 };
 

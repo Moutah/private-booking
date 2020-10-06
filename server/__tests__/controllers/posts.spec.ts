@@ -50,7 +50,7 @@ describe("Posts", () => {
         .trustLocalhost();
 
       // response is failure
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
       expect(response.body).toMatchObject({
         errors: [
           {

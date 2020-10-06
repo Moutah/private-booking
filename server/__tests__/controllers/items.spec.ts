@@ -40,7 +40,7 @@ describe("Items", () => {
         .trustLocalhost();
 
       // response is failure
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
       expect(response.body).toMatchObject({
         errors: [
           { message: "Item name is required.", type: "required", path: "name" },

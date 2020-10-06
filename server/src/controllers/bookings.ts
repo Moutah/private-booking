@@ -1,27 +1,34 @@
 import Booking from "../models/Booking";
 import Item from "../models/Item";
-import { Request, Response } from "express";
-import { returnError } from "./helpers";
-import { NotFoundError } from "./not-found-error";
+import { NextFunction, Request, Response } from "express";
+import { NotFoundError } from "../errors";
 
 /**
  * Returns all bookings.
  */
-export const index = async (req: Request, res: Response) => {
+export const index = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let item = await Item.findBySlug(req.params.itemSlug);
 
     const bookings = await Booking.find({ item: item._id });
     res.json(bookings);
   } catch (err) {
-    res = returnError("bookings.index", err, res);
+    next(err);
   }
 };
 
 /**
  * Inserts an booking in the database with values from the given `req.body`.
  */
-export const insert = async (req: Request, res: Response) => {
+export const insert = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let item = await Item.findBySlug(req.params.itemSlug);
 
@@ -36,7 +43,7 @@ export const insert = async (req: Request, res: Response) => {
     // return booking
     res.status(201).json(booking);
   } catch (err) {
-    res = returnError("bookings.insert", err, res);
+    next(err);
   }
 };
 
@@ -44,7 +51,7 @@ export const insert = async (req: Request, res: Response) => {
  * Get a specific booking from the database with id matching the one in given
  * `req.params`.
  */
-export const get = async (req: Request, res: Response) => {
+export const get = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let booking = await Booking.findById(req.params.bookingId);
 
@@ -54,7 +61,7 @@ export const get = async (req: Request, res: Response) => {
 
     res.status(200).json(booking);
   } catch (err) {
-    res = returnError("bookings.get", err, res);
+    next(err);
   }
 };
 
@@ -62,7 +69,11 @@ export const get = async (req: Request, res: Response) => {
  * Update a specific booking from the database with slug matching the one in given
  * `req.params` with the content in `req.body`.
  */
-export const update = async (req: Request, res: Response) => {
+export const update = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let booking = await Booking.findById(req.params.bookingId);
 
@@ -77,7 +88,7 @@ export const update = async (req: Request, res: Response) => {
 
     res.status(200).send();
   } catch (err) {
-    res = returnError("bookings.update", err, res);
+    next(err);
   }
 };
 
@@ -85,7 +96,11 @@ export const update = async (req: Request, res: Response) => {
  * Remove a specific booking from the database with slug matching the one in given
  * `req.params`.
  */
-export const remove = async (req: Request, res: Response) => {
+export const remove = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     let booking = await Booking.findById(req.params.bookingId);
 
@@ -98,6 +113,6 @@ export const remove = async (req: Request, res: Response) => {
 
     res.status(200).send();
   } catch (err) {
-    res = returnError("bookings.remove", err, res);
+    next(err);
   }
 };
