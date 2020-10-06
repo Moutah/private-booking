@@ -3,6 +3,8 @@ import { ObjectId } from "mongodb";
 import { nextAvailableSlug } from "./helpers";
 import { NotFoundError } from "../controllers/not-found-error";
 import { ImageSchema, IImage } from "./Image";
+import { IInfo, InfoSchema } from "./Info";
+import { IPlace, PlaceSchema } from "./Place";
 
 // schema
 const ItemSchema = new mongoose.Schema({
@@ -30,13 +32,9 @@ const ItemSchema = new mongoose.Schema({
     long: Number,
   },
 
-  infos: [
-    new mongoose.Schema({ title: String, message: String, image: String }),
-  ],
+  infos: [InfoSchema],
 
-  places: [
-    new mongoose.Schema({ name: String, description: String, type: String }),
-  ],
+  places: [PlaceSchema],
 
   equipments: [String],
 
@@ -49,7 +47,7 @@ export interface IItem extends mongoose.Document {
   name: string;
   slug: string;
 
-  images: [IImage];
+  images: IImage[];
   description: string;
 
   address: {
@@ -61,11 +59,11 @@ export interface IItem extends mongoose.Document {
     long: Number;
   };
 
-  infos: [{ title: string; message: string; image: string }];
+  infos: IInfo[];
 
-  places: [{ name: string; description: string; type: string }];
+  places: IPlace[];
 
-  equipments: [string];
+  equipments: string[];
 
   owner: ObjectId;
   managers: ObjectId[];

@@ -1,6 +1,8 @@
 import { getObjectId } from "mongo-seeding";
 import { ObjectId } from "mongodb";
 import faker from "faker";
+import Info from "../src/models/Info";
+import Place from "../src/models/Place";
 
 export const USERS_COUNT = 12;
 export const ITEMS_COUNT = 12;
@@ -58,9 +60,34 @@ export const calcBindings = () => {
     // get some users
     const itemUserIds = getIdsUpTo("users", 4);
 
+    // build infos
+    const infos = [];
+    for (let i = 0; i < 4; i++) {
+      infos.push(
+        new Info({
+          title: faker.lorem.sentence(),
+          message: faker.lorem.paragraph(),
+        })
+      );
+    }
+
+    // build places
+    const places = [];
+    for (let i = 0; i < 4; i++) {
+      places.push(
+        new Place({
+          name: faker.lorem.sentence(),
+          description: faker.lorem.paragraph(),
+          type: faker.lorem.word(),
+        })
+      );
+    }
+
     return {
       ...item,
 
+      infos,
+      places,
       owner: itemUserIds[0],
       managers: itemUserIds,
       bookings: [],
