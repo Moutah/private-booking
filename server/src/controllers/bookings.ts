@@ -1,7 +1,6 @@
-import Booking from "../models/Booking";
-import Item from "../models/Item";
+import Booking, { IBooking } from "../models/Booking";
+import { IItem } from "../models/Item";
 import { NextFunction, Request, Response } from "express";
-import { NotFoundError } from "../errors";
 
 /**
  * Returns all bookings.
@@ -12,9 +11,7 @@ export const index = async (
   next: NextFunction
 ) => {
   try {
-    let item = await Item.findBySlug(req.params.itemSlug);
-
-    const bookings = await Booking.find({ item: item._id });
+    const bookings = await Booking.find({ item: (req.item as IItem)._id });
     res.json(bookings);
   } catch (err) {
     next(err);
@@ -30,12 +27,10 @@ export const insert = async (
   next: NextFunction
 ) => {
   try {
-    let item = await Item.findBySlug(req.params.itemSlug);
-
     // create booking
     let booking = new Booking({
       ...req.body,
-      item: item._id,
+      item: (req.item as IItem)._id,
       createdAt: new Date(),
     });
     await booking.save();
@@ -52,17 +47,7 @@ export const insert = async (
  * `req.params`.
  */
 export const get = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    let booking = await Booking.findById(req.params.bookingId);
-
-    if (!booking) {
-      throw new NotFoundError();
-    }
-
-    res.status(200).json(booking);
-  } catch (err) {
-    next(err);
-  }
+  res.status(200).json(req.booking);
 };
 
 /**
@@ -75,11 +60,7 @@ export const update = async (
   next: NextFunction
 ) => {
   try {
-    let booking = await Booking.findById(req.params.bookingId);
-
-    if (!booking) {
-      throw new NotFoundError();
-    }
+    let booking = req.booking as IBooking;
 
     // update booking
     booking.status = req.body.status || booking.status;
@@ -102,14 +83,8 @@ export const remove = async (
   next: NextFunction
 ) => {
   try {
-    let booking = await Booking.findById(req.params.bookingId);
-
-    if (!booking) {
-      throw new NotFoundError();
-    }
-
     // remove booking
-    await booking.remove();
+    await (req.booking as IBooking).remove();
 
     res.status(200).send();
   } catch (err) {

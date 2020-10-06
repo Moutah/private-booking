@@ -129,7 +129,7 @@ describe("Posts", () => {
     });
 
     it("can handle server error", async () => {
-      // hijack post.findById to have a server error on Post.save() and console.log to mute
+      // hijack post.findById to have a server error on Post.save()
       const findByIdBackup = Post.findById;
       Post.findById = jest.fn().mockResolvedValueOnce(
         new Promise((resolve, reject) => {
@@ -140,6 +140,8 @@ describe("Posts", () => {
           });
         })
       );
+
+      // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
       // run a request that will fail
@@ -198,7 +200,7 @@ describe("Posts", () => {
     });
 
     it("can handle server error", async () => {
-      // hijack post.findById to have a server error on Post.save() and console.log to mute
+      // hijack post.findById to have a server error on Post.save()
       const findByIdBackup = Post.findById;
       Post.findById = jest.fn().mockResolvedValueOnce(
         new Promise((resolve, reject) => {
@@ -209,6 +211,8 @@ describe("Posts", () => {
           });
         })
       );
+
+      // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
       // run a request that will fail

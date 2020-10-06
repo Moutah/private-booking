@@ -6,7 +6,7 @@ import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 
 describe("Bookings", () => {
   let item = new Item({ name: "base item", slug: "base-item" });
-  const baseUrl = () => `/api/items/${item.slug}`;
+  const baseUrl = `/api/items/${item.slug}`;
 
   beforeAll(async () => {
     await server.setup();
@@ -22,13 +22,13 @@ describe("Bookings", () => {
   describe("index", () => {
     it(
       "can handle server error",
-      testServerErrorHandling("GET", `${baseUrl()}/bookings`, Booking, "find")
+      testServerErrorHandling("GET", `${baseUrl}/bookings`, Booking, "find")
     );
 
     it("can return list of bookings", async () => {
       // get bookings
       const response = await supertest(server.server)
-        .get(`${baseUrl()}/bookings`)
+        .get(`${baseUrl}/bookings`)
         .trustLocalhost();
       expect(response.status).toBe(200);
     });
@@ -45,7 +45,7 @@ describe("Bookings", () => {
     it("won't store invalid request", async () => {
       // run a request with invalid body
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/bookings`)
+        .post(`${baseUrl}/bookings`)
         .send({ message: undefined })
         .trustLocalhost();
 
@@ -66,7 +66,7 @@ describe("Bookings", () => {
       // run a request with valid body
       const now = new Date();
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/bookings`)
+        .post(`${baseUrl}/bookings`)
         .send({ date: now })
         .trustLocalhost();
 
@@ -97,7 +97,7 @@ describe("Bookings", () => {
       "can handle server error",
       testServerErrorHandling(
         "GET",
-        `${baseUrl()}/bookings/${testBooking._id}`,
+        `${baseUrl}/bookings/${testBooking._id}`,
         Booking,
         "findById"
       )
@@ -107,14 +107,14 @@ describe("Bookings", () => {
       "can handle not found",
       testNotFoundErrorHandling(
         "GET",
-        `${baseUrl()}/bookings/000000000000000000000000`
+        `${baseUrl}/bookings/000000000000000000000000`
       )
     );
 
     it("can get booking", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .get(`${baseUrl()}/bookings/${testBooking._id}`)
+        .get(`${baseUrl}/bookings/${testBooking._id}`)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body._id).toBe(testBooking._id.toHexString());
@@ -136,21 +136,37 @@ describe("Bookings", () => {
       await Booking.deleteMany({ message: "Le test message" });
     });
 
-    it(
-      "can handle server error",
-      testServerErrorHandling(
-        "POST",
-        `${baseUrl()}/bookings/${testBooking._id}`,
-        Booking,
-        "findById"
-      )
-    );
+    it("can handle server error", async () => {
+      // hijack post.findById to have a server error on Booking.save()
+      const findByIdBackup = Booking.findById;
+      Booking.findById = jest.fn().mockResolvedValueOnce(
+        new Promise((resolve, reject) => {
+          resolve({
+            save: () => {
+              throw new Error("TEST server error");
+            },
+          });
+        })
+      );
+
+      // mute console
+      jest.spyOn(console, "error").mockImplementationOnce(() => {});
+
+      // run a request that will fail
+      const response = await supertest(server.server)
+        .post(`${baseUrl}/bookings/${testBooking._id}`)
+        .trustLocalhost();
+      expect(response.status).toBe(500);
+
+      // restore hijack
+      Booking.findById = findByIdBackup;
+    });
 
     it(
       "can handle not found",
       testNotFoundErrorHandling(
         "POST",
-        `${baseUrl()}/bookings/000000000000000000000000`
+        `${baseUrl}/bookings/000000000000000000000000`
       )
     );
 
@@ -158,7 +174,7 @@ describe("Bookings", () => {
       // run a request that will work
       const now = new Date();
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/bookings/${testBooking._id}`)
+        .post(`${baseUrl}/bookings/${testBooking._id}`)
         .send({
           status: "new value",
           comment: "new value",
@@ -186,7 +202,7 @@ describe("Bookings", () => {
     it("can update booking with empty values", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/bookings/${testBooking._id}`)
+        .post(`${baseUrl}/bookings/${testBooking._id}`)
         .send({
           status: "",
           comment: "",
@@ -220,28 +236,44 @@ describe("Bookings", () => {
       await testBooking.save();
     });
 
-    it(
-      "can handle server error",
-      testServerErrorHandling(
-        "POST",
-        `${baseUrl()}/bookings/${testBooking._id}/delete`,
-        Booking,
-        "findById"
-      )
-    );
+    it("can handle server error", async () => {
+      // hijack post.findById to have a server error on Booking.save()
+      const findByIdBackup = Booking.findById;
+      Booking.findById = jest.fn().mockResolvedValueOnce(
+        new Promise((resolve, reject) => {
+          resolve({
+            remove: () => {
+              throw new Error("TEST server error");
+            },
+          });
+        })
+      );
+
+      // mute console
+      jest.spyOn(console, "error").mockImplementationOnce(() => {});
+
+      // run a request that will fail
+      const response = await supertest(server.server)
+        .post(`${baseUrl}/bookings/${testBooking._id}/delete`)
+        .trustLocalhost();
+      expect(response.status).toBe(500);
+
+      // restore hijack
+      Booking.findById = findByIdBackup;
+    });
 
     it(
       "can handle not found",
       testNotFoundErrorHandling(
         "POST",
-        `${baseUrl()}/bookings/000000000000000000000000/delete`
+        `${baseUrl}/bookings/000000000000000000000000/delete`
       )
     );
 
     it("can delete booking", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/bookings/${testBooking._id}/delete`)
+        .post(`${baseUrl}/bookings/${testBooking._id}/delete`)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

@@ -134,7 +134,7 @@ describe("Items", () => {
     afterAll(async () => await Item.deleteMany({ name: "test item" }));
 
     it("can handle server error", async () => {
-      // hijack Item.findBySlug to have a server error and console.log to mute
+      // hijack Item.findBySlug to have a server error
       jest.spyOn(Item, "findBySlug").mockImplementationOnce(
         (slug: string): Promise<IItem> =>
           new Promise((resolve, reject) => {
@@ -145,6 +145,8 @@ describe("Items", () => {
             resolve(item);
           })
       );
+
+      // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
       // run a request that will fail
@@ -234,7 +236,7 @@ describe("Items", () => {
     beforeAll(async () => await testItem.save());
 
     it("can handle server error", async () => {
-      // hijack Item.findBySlug to have a server error and console.log to mute
+      // hijack Item.findBySlug to have a server error
       jest.spyOn(Item, "findBySlug").mockImplementationOnce(
         (slug: string): Promise<IItem> =>
           new Promise((resolve, reject) => {
@@ -245,6 +247,8 @@ describe("Items", () => {
             resolve(item);
           })
       );
+
+      // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
       // run a request that will fail
