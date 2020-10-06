@@ -6,7 +6,7 @@ import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 
 describe("Posts", () => {
   let item = new Item({ name: "base item", slug: "base-item" });
-  const baseUrl = () => `/api/items/${item.slug}`;
+  const baseUrl = `/api/items/${item.slug}`;
 
   beforeAll(async () => {
     await server.setup();
@@ -22,13 +22,13 @@ describe("Posts", () => {
   describe("index", () => {
     it(
       "can handle server error",
-      testServerErrorHandling("GET", `${baseUrl()}/posts`, Post, "find")
+      testServerErrorHandling("GET", `${baseUrl}/posts`, Post, "find")
     );
 
     it("can return list of posts", async () => {
       // get posts
       const response = await supertest(server.server)
-        .get(`${baseUrl()}/posts`)
+        .get(`${baseUrl}/posts`)
         .trustLocalhost();
       expect(response.status).toBe(200);
     });
@@ -45,7 +45,7 @@ describe("Posts", () => {
     it("won't store invalid request", async () => {
       // run a request with invalid body
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/posts`)
+        .post(`${baseUrl}/posts`)
         .send({ message: undefined })
         .trustLocalhost();
 
@@ -65,7 +65,7 @@ describe("Posts", () => {
     it("can store valid request", async () => {
       // run a request with valid body
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/posts`)
+        .post(`${baseUrl}/posts`)
         .send({ message: "Le test message" })
         .trustLocalhost();
 
@@ -92,7 +92,7 @@ describe("Posts", () => {
       "can handle server error",
       testServerErrorHandling(
         "GET",
-        `${baseUrl()}/posts/${testPost._id}`,
+        `${baseUrl}/posts/${testPost._id}`,
         Post,
         "findById"
       )
@@ -102,14 +102,14 @@ describe("Posts", () => {
       "can handle not found",
       testNotFoundErrorHandling(
         "GET",
-        `${baseUrl()}/posts/000000000000000000000000`
+        `${baseUrl}/posts/000000000000000000000000`
       )
     );
 
     it("can get post", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .get(`${baseUrl()}/posts/${testPost._id}`)
+        .get(`${baseUrl}/posts/${testPost._id}`)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body._id).toBe(testPost._id.toHexString());
@@ -128,21 +128,35 @@ describe("Posts", () => {
       await Post.deleteMany({ message: "Le test message" });
     });
 
-    it(
-      "can handle server error",
-      testServerErrorHandling(
-        "POST",
-        `${baseUrl()}/posts/${testPost._id}`,
-        Post,
-        "findById"
-      )
-    );
+    it("can handle server error", async () => {
+      // hijack post.findById to have a server error on Post.save() and console.log to mute
+      const findByIdBackup = Post.findById;
+      Post.findById = jest.fn().mockResolvedValueOnce(
+        new Promise((resolve, reject) => {
+          resolve({
+            save: () => {
+              throw new Error("TEST server error");
+            },
+          });
+        })
+      );
+      jest.spyOn(console, "error").mockImplementationOnce(() => {});
+
+      // run a request that will fail
+      const response = await supertest(server.server)
+        .post(`${baseUrl}/posts/${testPost._id}`)
+        .trustLocalhost();
+      expect(response.status).toBe(500);
+
+      // restore hijack
+      Post.findById = findByIdBackup;
+    });
 
     it(
       "can handle not found",
       testNotFoundErrorHandling(
         "POST",
-        `${baseUrl()}/posts/000000000000000000000000`
+        `${baseUrl}/posts/000000000000000000000000`
       )
     );
 
@@ -150,7 +164,7 @@ describe("Posts", () => {
       // run a request that will work
       const now = new Date();
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/posts/${testPost._id}`)
+        .post(`${baseUrl}/posts/${testPost._id}`)
         .send({
           message: "new value",
           createdAt: now,
@@ -183,28 +197,42 @@ describe("Posts", () => {
       await testPost.save();
     });
 
-    it(
-      "can handle server error",
-      testServerErrorHandling(
-        "POST",
-        `${baseUrl()}/posts/${testPost._id}/delete`,
-        Post,
-        "findById"
-      )
-    );
+    it("can handle server error", async () => {
+      // hijack post.findById to have a server error on Post.save() and console.log to mute
+      const findByIdBackup = Post.findById;
+      Post.findById = jest.fn().mockResolvedValueOnce(
+        new Promise((resolve, reject) => {
+          resolve({
+            remove: () => {
+              throw new Error("TEST server error");
+            },
+          });
+        })
+      );
+      jest.spyOn(console, "error").mockImplementationOnce(() => {});
+
+      // run a request that will fail
+      const response = await supertest(server.server)
+        .post(`${baseUrl}/posts/${testPost._id}/delete`)
+        .trustLocalhost();
+      expect(response.status).toBe(500);
+
+      // restore hijack
+      Post.findById = findByIdBackup;
+    });
 
     it(
       "can handle not found",
       testNotFoundErrorHandling(
         "POST",
-        `${baseUrl()}/posts/000000000000000000000000/delete`
+        `${baseUrl}/posts/000000000000000000000000/delete`
       )
     );
 
     it("can delete post", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl()}/posts/${testPost._id}/delete`)
+        .post(`${baseUrl}/posts/${testPost._id}/delete`)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

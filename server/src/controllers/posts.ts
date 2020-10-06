@@ -1,7 +1,6 @@
-import Post from "../models/Post";
-import Item from "../models/Item";
+import Post, { IPost } from "../models/Post";
+import { IItem } from "../models/Item";
 import { NextFunction, Request, Response } from "express";
-import { NotFoundError } from "../errors";
 
 /**
  * Returns all posts.
@@ -12,9 +11,7 @@ export const index = async (
   next: NextFunction
 ) => {
   try {
-    let item = await Item.findBySlug(req.params.itemSlug);
-
-    const posts = await Post.find({ item: item._id });
+    const posts = await Post.find({ item: (req.item as IItem)._id });
     res.json(posts);
   } catch (err) {
     next(err);
@@ -30,12 +27,10 @@ export const insert = async (
   next: NextFunction
 ) => {
   try {
-    let item = await Item.findBySlug(req.params.itemSlug);
-
     // create post
     let post = new Post({
       ...req.body,
-      item: item._id,
+      item: (req.item as IItem)._id,
       date: new Date(),
     });
     await post.save();
@@ -52,17 +47,7 @@ export const insert = async (
  * `req.params`.
  */
 export const get = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    let post = await Post.findById(req.params.postId);
-
-    if (!post) {
-      throw new NotFoundError();
-    }
-
-    res.status(200).json(post);
-  } catch (err) {
-    next(err);
-  }
+  res.status(200).json(req.post);
 };
 
 /**
@@ -75,11 +60,7 @@ export const update = async (
   next: NextFunction
 ) => {
   try {
-    let post = await Post.findById(req.params.postId);
-
-    if (!post) {
-      throw new NotFoundError();
-    }
+    let post = req.post as IPost;
 
     // update post
     post.message = req.body.message;
@@ -101,14 +82,8 @@ export const remove = async (
   next: NextFunction
 ) => {
   try {
-    let post = await Post.findById(req.params.postId);
-
-    if (!post) {
-      throw new NotFoundError();
-    }
-
     // remove post
-    await post.remove();
+    await (req.post as IPost).remove();
 
     res.status(200).send();
   } catch (err) {
