@@ -1,11 +1,14 @@
 import express from "express";
 import * as itemsController from "../../controllers/items";
+import * as itemInfosController from "../../controllers/itemInfos";
 import { loadItemBySlug } from "../../middleware/models";
 
 // create router
 export const itemsRouter = express.Router({
   mergeParams: true,
 });
+
+// *** Item
 
 itemsRouter.get("/", [itemsController.index]);
 itemsRouter.post("/", [itemsController.insert]);
@@ -14,4 +17,19 @@ itemsRouter.post("/:slug", [loadItemBySlug("slug"), itemsController.update]);
 itemsRouter.post("/:slug/delete", [
   loadItemBySlug("slug"),
   itemsController.remove,
+]);
+
+// *** Item infos
+
+itemsRouter.post("/:slug/infos", [
+  loadItemBySlug("slug"),
+  itemInfosController.insert,
+]);
+itemsRouter.post("/:slug/infos/:infoId", [
+  loadItemBySlug("slug"),
+  itemInfosController.update,
+]);
+itemsRouter.post("/:slug/infos/:infoId/delete", [
+  loadItemBySlug("slug"),
+  itemInfosController.remove,
 ]);

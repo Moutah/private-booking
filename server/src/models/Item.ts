@@ -47,7 +47,7 @@ export interface IItem extends mongoose.Document {
   name: string;
   slug: string;
 
-  images: IImage[];
+  images: mongoose.Types.DocumentArray<IImage>;
   description: string;
 
   address: {
@@ -59,9 +59,9 @@ export interface IItem extends mongoose.Document {
     long: Number;
   };
 
-  infos: IInfo[];
+  infos: mongoose.Types.DocumentArray<IInfo>;
 
-  places: IPlace[];
+  places: mongoose.Types.DocumentArray<IPlace>;
 
   equipments: string[];
 

@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import { IImage, ImageSchema } from "./Image";
 
 export const InfoSchema = new mongoose.Schema({
-  title: String,
-  message: String,
+  title: { type: "String", required: [true, "Info title is required."] },
+  message: { type: "String", required: [true, "Info message is required."] },
   image: ImageSchema,
 });
 

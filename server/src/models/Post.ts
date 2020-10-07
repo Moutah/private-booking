@@ -13,7 +13,7 @@ const Post = new mongoose.Schema({
 });
 
 export interface IPost extends mongoose.Document {
-  images: [IImage];
+  images: mongoose.Types.DocumentArray<IImage>;
   message: string;
 
   author: ObjectId;
