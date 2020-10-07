@@ -63,12 +63,15 @@ export const update = async (
 
     // update item
     item.description = req.body.description;
-    item.address.street = req.body.address.street || item.address.street;
-    item.address.zip = req.body.address.zip || item.address.zip;
-    item.address.city = req.body.address.city || item.address.city;
-    item.address.country = req.body.address.country || item.address.country;
-    item.address.lat = req.body.address.lat || item.address.lat;
-    item.address.long = req.body.address.long || item.address.long;
+    if (req.body.address) {
+      item.address.street = req.body.address.street || item.address.street;
+      item.address.zip = req.body.address.zip || item.address.zip;
+      item.address.city = req.body.address.city || item.address.city;
+      item.address.country = req.body.address.country || item.address.country;
+      item.address.lat = req.body.address.lat || item.address.lat;
+      item.address.long = req.body.address.long || item.address.long;
+    }
+    item.images = req.body.images || item.images;
     item.equipments = req.body.equipments;
     await item.save();
 

@@ -4,19 +4,23 @@ import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
 
-// create router
-export const apiRoutes = express.Router({
-  strict: true,
-});
+export const apiRoutes = () => {
+  // create router
+  const routes = express.Router({
+    strict: true,
+  });
 
-// bind routes
-apiRoutes.get("/ping", (req: Request, res: Response) => {
-  res.json("pong");
-});
+  // bind routes
+  routes.get("/ping", (req: Request, res: Response) => {
+    res.json("pong");
+  });
 
-apiRoutes.use("/items", itemsRouter);
-apiRoutes.use("/items/:itemSlug/posts", postsRouter);
-apiRoutes.use("/items/:itemSlug/bookings", bookingsRouter);
+  routes.use("/items", itemsRouter);
+  routes.use("/items/:itemSlug/posts", postsRouter);
+  routes.use("/items/:itemSlug/bookings", bookingsRouter);
 
-// error handling middleware
-apiRoutes.use(handleError);
+  // error handling middleware
+  routes.use(handleError);
+
+  return routes;
+};

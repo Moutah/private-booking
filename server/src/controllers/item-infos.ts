@@ -40,11 +40,11 @@ export const update = async (
     if (!info) {
       throw new NotFoundError();
     }
-
+    console.log("req.body in update", req.body);
     // update item
     info.title = req.body.title || info.title;
     info.message = req.body.message || info.message;
-    // info.image = ...
+    info.image = req.body.images ? req.body.images[0] : info.image;
     await item.save();
 
     res.status(200).send();

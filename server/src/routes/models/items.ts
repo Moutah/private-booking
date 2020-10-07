@@ -3,6 +3,7 @@ import * as itemsController from "../../controllers/items";
 import * as itemInfosController from "../../controllers/item-infos";
 import * as itemPlacesController from "../../controllers/item-places";
 import { loadItemBySlug } from "../../middleware/models";
+import { handleImageUpload } from "../../middleware/store-image";
 
 // create router
 export const itemsRouter = express.Router({
@@ -12,19 +13,25 @@ export const itemsRouter = express.Router({
 // *** Item
 
 itemsRouter.get("/", [itemsController.index]);
-itemsRouter.post("/", [itemsController.insert]);
+itemsRouter.post("/", [handleImageUpload(), itemsController.insert]);
 itemsRouter.get("/:slug", [loadItemBySlug("slug"), itemsController.get]);
-itemsRouter.patch("/:slug", [loadItemBySlug("slug"), itemsController.update]);
+itemsRouter.patch("/:slug", [
+  loadItemBySlug("slug"),
+  handleImageUpload(),
+  itemsController.update,
+]);
 itemsRouter.delete("/:slug", [loadItemBySlug("slug"), itemsController.remove]);
 
 // *** Item infos
 
 itemsRouter.post("/:slug/infos", [
   loadItemBySlug("slug"),
+  handleImageUpload(),
   itemInfosController.insert,
 ]);
 itemsRouter.patch("/:slug/infos/:infoId", [
   loadItemBySlug("slug"),
+  handleImageUpload(),
   itemInfosController.update,
 ]);
 itemsRouter.delete("/:slug/infos/:infoId", [

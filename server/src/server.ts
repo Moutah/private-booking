@@ -3,7 +3,7 @@ import fs from "fs";
 import express, { Express } from "express";
 import bodyParser from "body-parser";
 import * as db from "./db";
-import { webRoutes, staticClientAssets } from "./routes/web";
+import { webRoutes } from "./routes/web";
 import { apiRoutes } from "./routes/api";
 import { Server } from "http";
 import helmet from "helmet";
@@ -12,6 +12,7 @@ import "./models/Booking";
 import "./models/Item";
 import "./models/Post";
 import "./models/User";
+import fileUpload from "express-fileupload";
 
 export const app: Express = express();
 export let server: Server;
@@ -31,19 +32,19 @@ export const setup = async () => {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(helmet());
   app.use(compression());
+  app.use(
+    fileUpload({
+      limits: { fileSize: 50 * 1024 * 1024 },
+      createParentPath: true,
+    })
+  );
 
   // connect to DB
   await db.connect();
 
   // register routes
-  app.use(webRoutes);
-  app.use("/api", apiRoutes);
-
-  // register static assets
-  const staticWebRoutes = staticClientAssets();
-  if (staticWebRoutes) {
-    app.use(staticWebRoutes);
-  }
+  app.use(webRoutes());
+  app.use("/api", apiRoutes());
 
   // set server
   server = https.createServer(httpsOptions, app);

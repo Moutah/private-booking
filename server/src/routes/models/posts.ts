@@ -1,6 +1,7 @@
 import express from "express";
 import * as postsController from "../../controllers/posts";
 import { loadItemBySlug, loadPostById } from "../../middleware/models";
+import { handleImageUpload } from "../../middleware/store-image";
 
 // create router
 export const postsRouter = express.Router({
@@ -8,7 +9,11 @@ export const postsRouter = express.Router({
 });
 
 postsRouter.get("/", [loadItemBySlug("itemSlug"), postsController.index]);
-postsRouter.post("/", [loadItemBySlug("itemSlug"), postsController.insert]);
+postsRouter.post("/", [
+  loadItemBySlug("itemSlug"),
+  handleImageUpload(),
+  postsController.insert,
+]);
 postsRouter.get("/:postId", [
   loadItemBySlug("itemSlug"),
   loadPostById("postId"),

@@ -45,7 +45,6 @@ export const update = async (
     place.name = req.body.name || place.name;
     place.description = req.body.description || place.description;
     place.type = req.body.type;
-    // place.image = ...
     await item.save();
 
     res.status(200).send();

@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import { nextAvailableSlug } from "./helpers";
 import { NotFoundError } from "../errors";
-import { ImageSchema, IImage } from "./Image";
 import { IInfo, InfoSchema } from "./Info";
 import { IPlace, PlaceSchema } from "./Place";
 
@@ -20,7 +19,7 @@ const ItemSchema = new mongoose.Schema({
     immutable: true,
   },
 
-  images: [ImageSchema],
+  images: [String],
   description: String,
 
   address: {
@@ -47,7 +46,7 @@ export interface IItem extends mongoose.Document {
   name: string;
   slug: string;
 
-  images: mongoose.Types.DocumentArray<IImage>;
+  images: string[];
   description: string;
 
   address: {
