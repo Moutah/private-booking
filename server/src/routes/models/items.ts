@@ -14,11 +14,8 @@ export const itemsRouter = express.Router({
 itemsRouter.get("/", [itemsController.index]);
 itemsRouter.post("/", [itemsController.insert]);
 itemsRouter.get("/:slug", [loadItemBySlug("slug"), itemsController.get]);
-itemsRouter.post("/:slug", [loadItemBySlug("slug"), itemsController.update]);
-itemsRouter.post("/:slug/delete", [
-  loadItemBySlug("slug"),
-  itemsController.remove,
-]);
+itemsRouter.patch("/:slug", [loadItemBySlug("slug"), itemsController.update]);
+itemsRouter.delete("/:slug", [loadItemBySlug("slug"), itemsController.remove]);
 
 // *** Item infos
 
@@ -26,11 +23,11 @@ itemsRouter.post("/:slug/infos", [
   loadItemBySlug("slug"),
   itemInfosController.insert,
 ]);
-itemsRouter.post("/:slug/infos/:infoId", [
+itemsRouter.patch("/:slug/infos/:infoId", [
   loadItemBySlug("slug"),
   itemInfosController.update,
 ]);
-itemsRouter.post("/:slug/infos/:infoId/delete", [
+itemsRouter.delete("/:slug/infos/:infoId", [
   loadItemBySlug("slug"),
   itemInfosController.remove,
 ]);
@@ -41,11 +38,11 @@ itemsRouter.post("/:slug/places", [
   loadItemBySlug("slug"),
   itemPlacesController.insert,
 ]);
-itemsRouter.post("/:slug/places/:placeId", [
+itemsRouter.patch("/:slug/places/:placeId", [
   loadItemBySlug("slug"),
   itemPlacesController.update,
 ]);
-itemsRouter.post("/:slug/places/:placeId/delete", [
+itemsRouter.delete("/:slug/places/:placeId", [
   loadItemBySlug("slug"),
   itemPlacesController.remove,
 ]);

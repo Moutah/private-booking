@@ -17,12 +17,12 @@ bookingsRouter.get("/:bookingId", [
   loadBookingById("bookingId"),
   bookingsController.get,
 ]);
-bookingsRouter.post("/:bookingId", [
+bookingsRouter.patch("/:bookingId", [
   loadItemBySlug("itemSlug"),
   loadBookingById("bookingId"),
   bookingsController.update,
 ]);
-bookingsRouter.post("/:bookingId/delete", [
+bookingsRouter.delete("/:bookingId", [
   loadItemBySlug("itemSlug"),
   loadBookingById("bookingId"),
   bookingsController.remove,

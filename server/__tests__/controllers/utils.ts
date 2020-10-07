@@ -36,10 +36,26 @@ export const testNotFoundErrorHandling = (
 ) => async () => {
   // run a request that will not found
   const request = supertest(server.server);
-  const response = await (method.toLowerCase() === "post"
-    ? request.post(url)
-    : request.get(url)
-  ).trustLocalhost();
+  let response;
+  switch (method) {
+    case "POST":
+      response = await request.post(url).trustLocalhost();
+      break;
+
+    case "PATCH":
+      response = await request.patch(url).trustLocalhost();
+      break;
+
+    case "DELETE":
+      response = await request.delete(url).trustLocalhost();
+      break;
+
+    default:
+    case "GET":
+      response = await request.get(url).trustLocalhost();
+      break;
+  }
+
   expect(response.status).toBe(404);
   expect(response.body).toBe("Not found");
 };

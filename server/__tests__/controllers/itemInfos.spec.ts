@@ -102,7 +102,7 @@ describe("Item infos", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post(`${baseUrl}/infos/${testInfo._id}`)
+        .patch(`${baseUrl}/infos/${testInfo._id}`)
         // we need to send a body because the error will come after info creation
         .send({
           title: "Le new test title",
@@ -118,7 +118,7 @@ describe("Item infos", () => {
     it(
       "can handle not found",
       testNotFoundErrorHandling(
-        "POST",
+        "PATCH",
         `${baseUrl}/infos/000000000000000000000000`
       )
     );
@@ -126,7 +126,7 @@ describe("Item infos", () => {
     it("can update info", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl}/infos/${testInfo._id}`)
+        .patch(`${baseUrl}/infos/${testInfo._id}`)
         .send({
           title: "new value",
           message: "new value",
@@ -151,7 +151,7 @@ describe("Item infos", () => {
     it("ignores falsy values for required fields", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl}/infos/${testInfo._id}`)
+        .patch(`${baseUrl}/infos/${testInfo._id}`)
         .send({
           title: "",
           message: "",
@@ -210,12 +210,7 @@ describe("Item infos", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post(`${baseUrl}/infos/${testInfo._id}/delete`)
-        // we need to send a body because the error will come after info creation
-        .send({
-          title: "Le new test title",
-          message: "Le new test message",
-        })
+        .delete(`${baseUrl}/infos/${testInfo._id}`)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -226,15 +221,15 @@ describe("Item infos", () => {
     it(
       "can handle not found",
       testNotFoundErrorHandling(
-        "POST",
-        `${baseUrl}/infos/000000000000000000000000/delete`
+        "DELETE",
+        `${baseUrl}/infos/000000000000000000000000`
       )
     );
 
     it("can delete info", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl}/infos/${testInfo._id}/delete`)
+        .delete(`${baseUrl}/infos/${testInfo._id}`)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

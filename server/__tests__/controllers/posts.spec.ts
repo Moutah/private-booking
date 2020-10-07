@@ -145,7 +145,7 @@ describe("Posts", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post(`${baseUrl}/posts/${testPost._id}`)
+        .patch(`${baseUrl}/posts/${testPost._id}`)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -156,7 +156,7 @@ describe("Posts", () => {
     it(
       "can handle not found",
       testNotFoundErrorHandling(
-        "POST",
+        "PATCH",
         `${baseUrl}/posts/000000000000000000000000`
       )
     );
@@ -165,7 +165,7 @@ describe("Posts", () => {
       // run a request that will work
       const now = new Date();
       const response = await supertest(server.server)
-        .post(`${baseUrl}/posts/${testPost._id}`)
+        .patch(`${baseUrl}/posts/${testPost._id}`)
         .send({
           message: "new value",
           createdAt: now,
@@ -216,7 +216,7 @@ describe("Posts", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post(`${baseUrl}/posts/${testPost._id}/delete`)
+        .delete(`${baseUrl}/posts/${testPost._id}`)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -227,15 +227,15 @@ describe("Posts", () => {
     it(
       "can handle not found",
       testNotFoundErrorHandling(
-        "POST",
-        `${baseUrl}/posts/000000000000000000000000/delete`
+        "DELETE",
+        `${baseUrl}/posts/000000000000000000000000`
       )
     );
 
     it("can delete post", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl}/posts/${testPost._id}/delete`)
+        .delete(`${baseUrl}/posts/${testPost._id}`)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

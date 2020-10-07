@@ -14,12 +14,12 @@ postsRouter.get("/:postId", [
   loadPostById("postId"),
   postsController.get,
 ]);
-postsRouter.post("/:postId", [
+postsRouter.patch("/:postId", [
   loadItemBySlug("itemSlug"),
   loadPostById("postId"),
   postsController.update,
 ]);
-postsRouter.post("/:postId/delete", [
+postsRouter.delete("/:postId", [
   loadItemBySlug("itemSlug"),
   loadPostById("postId"),
   postsController.remove,

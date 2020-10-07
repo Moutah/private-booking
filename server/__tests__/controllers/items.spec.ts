@@ -151,20 +151,20 @@ describe("Items", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post("/api/items/test-item")
+        .patch("/api/items/test-item")
         .trustLocalhost();
       expect(response.status).toBe(500);
     });
 
     it(
       "can handle not found",
-      testNotFoundErrorHandling("POST", "/api/items/this-item-does-not-exist")
+      testNotFoundErrorHandling("PATCH", "/api/items/this-item-does-not-exist")
     );
 
     it("can update item", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post("/api/items/test-item")
+        .patch("/api/items/test-item")
         .send({
           description: "new value",
           address: {
@@ -204,7 +204,7 @@ describe("Items", () => {
     it("can update item address partially", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post("/api/items/test-item")
+        .patch("/api/items/test-item")
         .send({
           address: {
             lat: 1,
@@ -253,23 +253,20 @@ describe("Items", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post("/api/items/test-item/delete")
+        .delete("/api/items/test-item")
         .trustLocalhost();
       expect(response.status).toBe(500);
     });
 
     it(
       "can handle not found",
-      testNotFoundErrorHandling(
-        "POST",
-        "/api/items/this-item-does-not-exist/delete"
-      )
+      testNotFoundErrorHandling("DELETE", "/api/items/this-item-does-not-exist")
     );
 
     it("can delete item", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post("/api/items/test-item/delete")
+        .delete("/api/items/test-item")
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

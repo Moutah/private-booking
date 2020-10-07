@@ -156,7 +156,7 @@ describe("Bookings", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post(`${baseUrl}/bookings/${testBooking._id}`)
+        .patch(`${baseUrl}/bookings/${testBooking._id}`)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -167,7 +167,7 @@ describe("Bookings", () => {
     it(
       "can handle not found",
       testNotFoundErrorHandling(
-        "POST",
+        "PATCH",
         `${baseUrl}/bookings/000000000000000000000000`
       )
     );
@@ -176,7 +176,7 @@ describe("Bookings", () => {
       // run a request that will work
       const now = new Date();
       const response = await supertest(server.server)
-        .post(`${baseUrl}/bookings/${testBooking._id}`)
+        .patch(`${baseUrl}/bookings/${testBooking._id}`)
         .send({
           status: "new value",
           comment: "new value",
@@ -204,7 +204,7 @@ describe("Bookings", () => {
     it("can update booking with empty values", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl}/bookings/${testBooking._id}`)
+        .patch(`${baseUrl}/bookings/${testBooking._id}`)
         .send({
           status: "",
           comment: "",
@@ -256,7 +256,7 @@ describe("Bookings", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .post(`${baseUrl}/bookings/${testBooking._id}/delete`)
+        .delete(`${baseUrl}/bookings/${testBooking._id}`)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -267,15 +267,15 @@ describe("Bookings", () => {
     it(
       "can handle not found",
       testNotFoundErrorHandling(
-        "POST",
-        `${baseUrl}/bookings/000000000000000000000000/delete`
+        "DELETE",
+        `${baseUrl}/bookings/000000000000000000000000`
       )
     );
 
     it("can delete booking", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .post(`${baseUrl}/bookings/${testBooking._id}/delete`)
+        .delete(`${baseUrl}/bookings/${testBooking._id}`)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});
