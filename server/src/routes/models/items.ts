@@ -1,7 +1,7 @@
 import express from "express";
 import * as itemsController from "../../controllers/items";
-import * as itemInfosController from "../../controllers/itemInfos";
-import * as itemPlacesController from "../../controllers/itemPlaces";
+import * as itemInfosController from "../../controllers/item-infos";
+import * as itemPlacesController from "../../controllers/item-places";
 import { loadItemBySlug } from "../../middleware/models";
 
 // create router
