@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
 
 export const PlaceSchema = new mongoose.Schema({
-  name: String,
-  description: String,
+  name: { type: "String", required: [true, "Place name is required."] },
+  description: {
+    type: "String",
+    required: [true, "Place description is required."],
+  },
   type: String,
 });
 
