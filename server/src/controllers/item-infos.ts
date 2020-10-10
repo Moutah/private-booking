@@ -40,7 +40,7 @@ export const update = async (
     if (!info) {
       throw new NotFoundError();
     }
-    console.log("req.body in update", req.body);
+
     // update item
     info.title = req.body.title || info.title;
     info.message = req.body.message || info.message;

@@ -1,3 +1,4 @@
+import https from "https";
 import { mocked } from "ts-jest/utils";
 import * as db from "../src/db";
 import * as server from "../src/server";
@@ -8,8 +9,10 @@ const mockedDb = mocked(db, true);
 
 describe("Server", () => {
   it("can be setup", async () => {
+    const httpsCreateServerSpy = jest.spyOn(https, "createServer");
     await server.setup();
     expect(mockedDb.connect).toHaveBeenCalled();
+    expect(httpsCreateServerSpy).toHaveBeenCalled();
   });
 
   it("can be started with a given port", async () => {
@@ -38,28 +41,6 @@ describe("Server", () => {
     // close server
     await server.stop();
     expect(server.server.listening).toBe(false);
-  });
-
-  it("uses express.static assets if CLIENT_BUILD_PATH set in env", async () => {
-    const serverSpyUse = jest.spyOn(server.app, "use");
-    const baseUseCount = 6;
-
-    // manually unset env
-    delete process.env.CLIENT_BUILD_PATH;
-
-    // setup server
-    await server.setup();
-    expect(serverSpyUse).toHaveBeenCalledTimes(baseUseCount);
-
-    // manually set env
-    process.env.CLIENT_BUILD_PATH = "some value";
-
-    // reset spy count
-    serverSpyUse.mockClear();
-
-    // setup server
-    await server.setup();
-    expect(serverSpyUse).toHaveBeenCalledTimes(baseUseCount + 1);
   });
 
   it("can be verbose", async () => {

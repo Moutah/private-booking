@@ -61,7 +61,7 @@ export const update = async (
 ) => {
   try {
     let post = req.post as IPost;
-    console.log(req.body);
+
     // update post
     post.message = req.body.message || post.message;
     post.images = req.body.images || post.images;

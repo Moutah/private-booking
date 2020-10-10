@@ -172,6 +172,8 @@ describe("Items", () => {
             city: "new value",
             zip: "new value",
             country: "new value",
+            lat: 1,
+            long: 2,
           },
           equipments: ["new value"],
           name: "new value",
@@ -193,8 +195,8 @@ describe("Items", () => {
       expect(dbItem.address.city).toBe("new value");
       expect(dbItem.address.zip).toBe("new value");
       expect(dbItem.address.country).toBe("new value");
-      expect(dbItem.address.lat).toBe(testItem.address.lat); // untouched
-      expect(dbItem.address.long).toBe(testItem.address.long); // untouched
+      expect(dbItem.address.lat).toBe(1);
+      expect(dbItem.address.long).toBe(2);
       expect(dbItem.equipments.join(",")).toBe("new value");
 
       // validate field protection
@@ -203,13 +205,69 @@ describe("Items", () => {
 
     it("can update item address partially", async () => {
       // run a request that will work
-      const response = await supertest(server.server)
+      let response = await supertest(server.server)
         .patch("/api/items/test-item")
         .send({
           address: {
-            lat: 1,
-            long: 2,
+            lat: 11,
+            long: 22,
           },
+        })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({});
+
+      // get item from db
+      let dbItem = await Item.findById(testItem._id);
+
+      if (!dbItem) {
+        throw new Error("Could not find test item in database anymore");
+      }
+
+      // validate changes
+      expect(dbItem.address.street).toBe("new value");
+      expect(dbItem.address.city).toBe("new value");
+      expect(dbItem.address.zip).toBe("new value");
+      expect(dbItem.address.country).toBe("new value");
+      expect(dbItem.address.lat).toBe(11);
+      expect(dbItem.address.long).toBe(22);
+      expect(dbItem.equipments.join(",")).toBe("");
+
+      // run a request that will work
+      response = await supertest(server.server)
+        .patch("/api/items/test-item")
+        .send({
+          address: {
+            street: "da street",
+          },
+        })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({});
+
+      // get item from db
+      dbItem = await Item.findById(testItem._id);
+
+      if (!dbItem) {
+        throw new Error("Could not find test item in database anymore");
+      }
+
+      // validate changes
+      expect(dbItem.address.street).toBe("da street");
+      expect(dbItem.address.city).toBe("new value");
+      expect(dbItem.address.zip).toBe("new value");
+      expect(dbItem.address.country).toBe("new value");
+      expect(dbItem.address.lat).toBe(11);
+      expect(dbItem.address.long).toBe(22);
+      expect(dbItem.equipments.join(",")).toBe("");
+    });
+
+    it("can update item without address", async () => {
+      // run a request that will work
+      const response = await supertest(server.server)
+        .patch("/api/items/test-item")
+        .send({
+          description: "new desc",
         })
         .trustLocalhost();
       expect(response.status).toBe(200);
@@ -223,8 +281,14 @@ describe("Items", () => {
       }
 
       // validate changes
-      expect(dbItem.address.lat).toBe(1);
-      expect(dbItem.address.long).toBe(2);
+      expect(dbItem.description).toBe("new desc");
+      expect(dbItem.address.street).toBe("da street");
+      expect(dbItem.address.city).toBe("new value");
+      expect(dbItem.address.zip).toBe("new value");
+      expect(dbItem.address.country).toBe("new value");
+      expect(dbItem.address.lat).toBe(11);
+      expect(dbItem.address.long).toBe(22);
+      expect(dbItem.equipments.join(",")).toBe("");
     });
   });
 
