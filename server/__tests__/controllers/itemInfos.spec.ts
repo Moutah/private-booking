@@ -1,8 +1,9 @@
+import fs from "fs";
 import supertest from "supertest";
 import * as server from "../../src/server";
 import Info from "../../src/models/Info";
 import Item from "../../src/models/Item";
-import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
+import { testNotFoundErrorHandling } from "./utils";
 
 describe("Item infos", () => {
   let item = new Item({ name: "base item infos", slug: "base-item-infos" });
@@ -63,6 +64,29 @@ describe("Item infos", () => {
       expect(lastInfo).toBeTruthy();
       expect(lastInfo.title).toBe("Le test title");
       expect(lastInfo.message).toBe("Le test message");
+    });
+
+    it("can handle images upload", async () => {
+      // run a request with valid body
+      const response = await supertest(server.server)
+        .post(`${baseUrl}/infos`)
+        .field("title", "Le test title with images")
+        .field("message", "Le test message with images")
+        .attach("images", "__tests__/images/lol.jpg")
+        .trustLocalhost();
+
+      // response is successful with newly created post
+      expect(response.status).toBe(201);
+      const lastInfo = response.body.infos[response.body.infos.length - 1];
+      expect(lastInfo).toBeTruthy();
+      expect(lastInfo.title).toBe("Le test title with images");
+      expect(lastInfo.message).toBe("Le test message with images");
+      expect(lastInfo.image).toStrictEqual(
+        `/images/${response.body.slug}/lol.jpg`
+      );
+
+      // cleanup
+      fs.rmdirSync(`../storage/${response.body.slug}`, { recursive: true });
     });
   });
 
@@ -171,6 +195,32 @@ describe("Item infos", () => {
       const lastInfo = dbItem.infos[dbItem.infos.length - 1];
       expect(lastInfo.title).toBe("new value");
       expect(lastInfo.message).toBe("new value");
+    });
+
+    it("can handle image upload", async () => {
+      // run a request with valid body
+      const response = await supertest(server.server)
+        .patch(`${baseUrl}/infos/${testInfo._id}`)
+        .attach("images", "__tests__/images/lol.jpg")
+        .trustLocalhost();
+
+      // response is successful with newly created post
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({});
+
+      // get info from db
+      const dbItem = await Item.findById(item._id);
+
+      if (!dbItem) {
+        throw new Error("Could not find test item in database anymore");
+      }
+
+      // validate changes
+      const lastInfo = dbItem.infos[dbItem.infos.length - 1];
+      expect(lastInfo.image).toBe(`/images/${dbItem.slug}/lol.jpg`);
+
+      // cleanup
+      fs.rmdirSync(`../storage/${dbItem.slug}`, { recursive: true });
     });
   });
 

@@ -1,6 +1,6 @@
 import https from "https";
 import fs from "fs";
-import express, { Express } from "express";
+import express from "express";
 import bodyParser from "body-parser";
 import * as db from "./db";
 import { webRoutes } from "./routes/web";
@@ -14,7 +14,7 @@ import "./models/Post";
 import "./models/User";
 import fileUpload from "express-fileupload";
 
-export const app: Express = express();
+export const app = express();
 export let server: Server;
 
 const httpsOptions = {

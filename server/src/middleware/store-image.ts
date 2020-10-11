@@ -1,6 +1,10 @@
 import fs from "fs";
 import { NextFunction, Request, Response } from "express";
 import { IItem } from "../models/Item";
+import fileUpload from "express-fileupload";
+import slugify from "slugify";
+import { itemsRouter } from "../routes/models/items";
+import { nextAvailableSlug } from "../helpers";
 
 /**
  * Returns an express middleware function that handles an uploaded file by
@@ -14,39 +18,100 @@ export const handleImageUpload = () => async (
 ) => {
   try {
     // no uploaded file to handle
-    if (!req.files) {
-      console.log("no file -> next");
+    if (!req.files) return next();
+
+    // get file extension
+    let { extension: fileExtension } = getFileNameParts(req.files.images.name);
+
+    // ignore non image files
+    if (!["jpg", "jpeg", "gif", "png"].includes(fileExtension)) {
       return next();
     }
 
     // accessing things
     const item = req.item as IItem;
-    const newFile = req.files.file;
 
-    // building paths
-    const itemStoragePath = `${process.env.PWD}/${process.env.STORAGE_PATH}/${item.slug}`;
-    const filePath = `${itemStoragePath}/${newFile.name}`;
-    const fileUrl = `/images/${item.slug}/${newFile.name}`;
+    // store file
+    const fileRelativePath = await storeUploadedFile(req.files.images, item);
 
-    // overwrite existing file
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // adds the new path to req
+    const fileUrl = `/images/${fileRelativePath}`;
+    if (req.body.images) {
+      req.body.images = Array.isArray(req.body.images)
+        ? [...req.body.images, fileUrl]
+        : [req.body.images, fileUrl];
+    } else {
+      req.body.images = [fileUrl];
     }
 
-    // move the new file to its destination
-    newFile.mv(filePath, (err) => {
-      if (err) {
-        throw err;
-      }
-
-      // adds the new path to req
-      req.body.images = req.body.images
-        ? [...req.body.images, fileUrl]
-        : [fileUrl];
-
-      next();
-    });
+    next();
   } catch (err) {
     next(err);
   }
+};
+
+/**
+ * Stores the given `file` in the storage folder of given `item`. Resolves on
+ * the stored file relative path in the storage.
+ * @param {fileUpload.UploadedFile} file
+ * @param {IItem} item
+ * @return {Promise<string>}
+ */
+export const storeUploadedFile = async (
+  file: fileUpload.UploadedFile,
+  item: IItem
+) => {
+  return new Promise((resolve, reject) => {
+    // get storage paths
+    const storagePath = `${process.env.PWD}/${process.env.STORAGE_PATH}`;
+    const itemStoragePath = `${storagePath}/${item.slug}`;
+
+    // get name and extension
+    let { basename: fileName, extension: fileExtension } = getFileNameParts(
+      file.name
+    );
+
+    // slugify name
+    let fileSlug = slugify(fileName);
+
+    // validate file name parts
+    if (!fileSlug || !fileExtension) {
+      reject(new Error("Invalid file name"));
+    }
+
+    // get next available slug for this file
+    if (fs.existsSync(itemStoragePath)) {
+      const files = fs.readdirSync(itemStoragePath);
+      const matchingFiles = files.filter((file) => file.startsWith(fileSlug));
+      fileSlug = nextAvailableSlug(fileSlug, matchingFiles);
+    }
+
+    // move the new file to its destination
+    const fileRelativePath = `${item.slug}/${fileSlug}.${fileExtension}`;
+    file.mv(`${storagePath}/${fileRelativePath}`, (err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve(fileRelativePath);
+    });
+  });
+};
+
+/**
+ * Returns an object with `basename` and `extension` parts of given `fileName`.
+ * Throws an error if file name does not have a basename or an extension.
+ * @throws
+ */
+const getFileNameParts = (fileName: string) => {
+  const parts = fileName.split(".");
+  if (parts.length != 2) {
+    throw new Error("Invalid file name");
+  }
+
+  return {
+    basename: parts[0],
+    extension: parts[1],
+  };
 };

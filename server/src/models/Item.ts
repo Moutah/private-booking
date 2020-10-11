@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
-import { nextAvailableSlug } from "./helpers";
+import { nextAvailableSlug } from "../helpers";
 import { NotFoundError } from "../errors";
 import { IInfo, InfoSchema } from "./Info";
 import { IPlace, PlaceSchema } from "./Place";

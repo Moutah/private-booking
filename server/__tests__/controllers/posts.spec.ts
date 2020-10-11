@@ -1,8 +1,10 @@
+import fs from "fs";
 import supertest from "supertest";
 import * as server from "../../src/server";
 import Post from "../../src/models/Post";
 import Item from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
+import { fstat } from "fs/promises";
 
 describe("Posts", () => {
   let item = new Item({ name: "base item posts", slug: "base-item-posts" });
@@ -73,6 +75,26 @@ describe("Posts", () => {
       expect(response.status).toBe(201);
       expect(response.body).toBeTruthy();
       expect(response.body.message).toBe("Le test message");
+    });
+
+    it("can handle images upload", async () => {
+      // run a request with valid body
+      const response = await supertest(server.server)
+        .post(`${baseUrl}/posts`)
+        .field("message", "Le test post with images")
+        .attach("images", "__tests__/images/lol.jpg")
+        .trustLocalhost();
+
+      // response is successful with newly created post
+      expect(response.status).toBe(201);
+      expect(response.body).toBeTruthy();
+      expect(response.body.message).toBe("Le test post with images");
+      expect(response.body.images).toStrictEqual([
+        `/images/${item.slug}/lol.jpg`,
+      ]);
+
+      // cleanup
+      fs.rmdirSync(`../storage/${item.slug}`, { recursive: true });
     });
   });
 

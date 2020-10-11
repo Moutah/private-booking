@@ -1,3 +1,8 @@
+/**
+ * Generates the next available slug by appending a number after given
+ * `baseSlug`. Looks in given `slugs` array for the highest existing slug and
+ * adds 1 to that number.
+ */
 export const nextAvailableSlug = (
   baseSlug: string,
   slugs: string[]

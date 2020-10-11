@@ -1,3 +1,4 @@
+import fs from "fs";
 import supertest from "supertest";
 import * as server from "../../src/server";
 import Item, { IItem } from "../../src/models/Item";
@@ -94,6 +95,26 @@ describe("Items", () => {
       // response is successful with incremented slug
       expect(response.status).toBe(201);
       expect(response.body.slug).toBe("item-name-3");
+    });
+
+    it("can handle images upload", async () => {
+      // run a request with valid body
+      const response = await supertest(server.server)
+        .post("/api/items")
+        .field("name", "Le item with images")
+        .attach("images", "__tests__/images/lol.jpg")
+        .trustLocalhost();
+
+      // response is successful with newly created post
+      expect(response.status).toBe(201);
+      expect(response.body).toBeTruthy();
+      expect(response.body.name).toBe("Le item with images");
+      expect(response.body.images).toStrictEqual([
+        `/images/${response.body.slug}/lol.jpg`,
+      ]);
+
+      // cleanup
+      fs.rmdirSync(`../storage/${response.body.slug}`, { recursive: true });
     });
   });
 
@@ -289,6 +310,31 @@ describe("Items", () => {
       expect(dbItem.address.lat).toBe(11);
       expect(dbItem.address.long).toBe(22);
       expect(dbItem.equipments.join(",")).toBe("");
+    });
+
+    it("can handle images upload", async () => {
+      // run a request with valid body
+      const response = await supertest(server.server)
+        .patch("/api/items/test-item")
+        .attach("images", "__tests__/images/lol.jpg")
+        .trustLocalhost();
+
+      // response is successful with newly created post
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({});
+
+      // get item from db
+      const dbItem = await Item.findById(testItem._id);
+
+      if (!dbItem) {
+        throw new Error("Could not find test item in database anymore");
+      }
+
+      // validate changes
+      expect(dbItem.images.join(",")).toBe(`/images/${dbItem.slug}/lol.jpg`);
+
+      // cleanup
+      fs.rmdirSync(`../storage/${dbItem.slug}`, { recursive: true });
     });
   });
 
