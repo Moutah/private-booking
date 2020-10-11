@@ -1,6 +1,7 @@
 import Item, { IItem } from "../models/Item";
 import { NextFunction, Request, Response } from "express";
 import slugify from "slugify";
+import { storeUploadedFile } from "../middleware/store-image";
 
 /**
  * Returns all items.
@@ -32,6 +33,16 @@ export const insert = async (
       ...req.body,
       slug: slugify(req.body.name || ""),
     });
+
+    // handle file upload
+    if (req.files) {
+      // store file
+      const fileRelativePath = await storeUploadedFile(req.files.images, item);
+
+      // adds the new path to item
+      item.images = [`/images/${fileRelativePath}`];
+    }
+
     await item.save();
 
     // return item

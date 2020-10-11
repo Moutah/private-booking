@@ -13,7 +13,7 @@ export const itemsRouter = express.Router({
 // *** Item
 
 itemsRouter.get("/", [itemsController.index]);
-itemsRouter.post("/", [handleImageUpload(), itemsController.insert]);
+itemsRouter.post("/", [itemsController.insert]);
 itemsRouter.get("/:slug", [loadItemBySlug("slug"), itemsController.get]);
 itemsRouter.patch("/:slug", [
   loadItemBySlug("slug"),
