@@ -13,6 +13,11 @@ export const insert = async (
   try {
     const item = req.item as IItem;
 
+    // update image property name
+    if (req.body.images && req.body.images.length > 0) {
+      req.body.image = req.body.images[0];
+    }
+
     // create info
     item.infos.push(req.body);
     await item.save();
