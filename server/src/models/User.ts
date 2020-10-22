@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
     select: false,
   },
 
-  token: { type: String, select: false },
+  isAdmin: { type: Boolean, default: false },
 
   items: [{ type: "ObjectId", ref: "Item" }],
 });
@@ -32,7 +32,7 @@ export interface IUser extends mongoose.Document {
   email: string;
   password: string;
 
-  token: string;
+  isAdmin: boolean;
 
   items: ObjectId[];
 
