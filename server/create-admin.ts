@@ -34,6 +34,7 @@ db.connect()
       name,
       email,
       password,
+      isAdmin: true,
     });
     await user.save();
     console.log("User added successfully");

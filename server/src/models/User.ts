@@ -2,6 +2,7 @@
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
+import jsonwebtoken from "jsonwebtoken";
 
 // schema
 const UserSchema = new mongoose.Schema({
@@ -36,12 +37,28 @@ export interface IUser extends mongoose.Document {
 
   items: ObjectId[];
 
-  isPasswordValid: boolean;
+  isPasswordValid: () => Promise<boolean>;
+  createJWT: () => string;
 }
 
 // methods
-UserSchema.methods.isPasswordValid = async function (password: string) {
+UserSchema.methods.isPasswordValid = async function (
+  password: string
+): Promise<boolean> {
   return await bcrypt.compare(password, this.password);
+};
+
+UserSchema.methods.createJWT = function (): string {
+  return jsonwebtoken.sign(
+    {
+      user: {
+        email: this.email,
+        isAdmin: this.isAdmin,
+      },
+    },
+    process.env.APP_KEY as string,
+    { expiresIn: "1h" }
+  );
 };
 
 // document middleware
