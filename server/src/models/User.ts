@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import jsonwebtoken from "jsonwebtoken";
+import { TOKEN_LIFESPAN } from "../auth";
 
 // schema
 const UserSchema = new mongoose.Schema({
@@ -28,7 +29,7 @@ const UserSchema = new mongoose.Schema({
 // interface
 export interface IUser extends mongoose.Document {
   name: string;
-  profileImage: string[];
+  profileImage: string;
 
   email: string;
   password: string;
@@ -51,13 +52,14 @@ UserSchema.methods.isPasswordValid = async function (
 UserSchema.methods.createJWT = function (): string {
   return jsonwebtoken.sign(
     {
-      user: {
-        email: this.email,
-        isAdmin: this.isAdmin,
-      },
+      sub: this._id,
+      name: this.name,
+      picture: this.profileImage,
+      email: this.email,
+      scope: this.isAdmin ? "Full" : "Write",
     },
     process.env.APP_KEY as string,
-    { expiresIn: "1h" }
+    { expiresIn: TOKEN_LIFESPAN }
   );
 };
 

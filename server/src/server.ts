@@ -13,6 +13,7 @@ import "./models/Item";
 import "./models/Post";
 import "./models/User";
 import fileUpload from "express-fileupload";
+import { setupPassportJWTStrategy } from "./auth";
 
 export const app = express();
 export let server: Server;
@@ -41,6 +42,9 @@ export const setup = async () => {
 
   // connect to DB
   await db.connect();
+
+  // setup auth guard
+  setupPassportJWTStrategy();
 
   // register routes
   app.use(webRoutes());
