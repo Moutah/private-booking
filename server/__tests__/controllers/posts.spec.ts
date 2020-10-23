@@ -4,7 +4,6 @@ import * as server from "../../src/server";
 import Post from "../../src/models/Post";
 import Item from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
-import { fstat } from "fs/promises";
 
 describe("Posts", () => {
   let item = new Item({ name: "base item posts", slug: "base-item-posts" });

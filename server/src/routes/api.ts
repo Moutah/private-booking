@@ -5,6 +5,7 @@ import { handleError } from "../middleware/error";
 import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
+import { usersRouter } from "./models/users";
 
 export const apiRoutes = () => {
   // create router
@@ -24,6 +25,7 @@ export const apiRoutes = () => {
   routes.use("/items", itemsRouter);
   routes.use("/items/:itemSlug/posts", postsRouter);
   routes.use("/items/:itemSlug/bookings", bookingsRouter);
+  routes.use("/users", usersRouter);
 
   // bind routes
   routes.get("/new-token", generateNewToken);

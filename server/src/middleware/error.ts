@@ -17,6 +17,11 @@ export const handleError = (
       });
       break;
 
+    // forbidden error
+    case "ForbiddenError":
+      res.status(403).json("Forbidden");
+      break;
+
     // not found error
     case "NotFoundError":
       res.status(404).json("Not found");
