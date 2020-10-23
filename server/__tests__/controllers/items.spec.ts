@@ -374,6 +374,105 @@ describe("Items", () => {
     });
   });
 
+  // *** Unregister
+
+  describe("Unregister", () => {
+    let owner: IUser;
+    let manager: IUser;
+    let troublemaker: IUser;
+    let testItem: IItem;
+
+    // create objects
+    beforeAll(async () => {
+      owner = new User({
+        name: "Item's owner",
+        email: "owner@mail.com",
+        password: "lol-password",
+      });
+
+      manager = new User({
+        name: "Item user",
+        email: "user@mail.com",
+        password: "lol-password",
+      });
+
+      troublemaker = new User({
+        name: "Troublemaker user",
+        email: "troublemaker@mail.com",
+        password: "lol-password",
+      });
+
+      testItem = new Item({
+        name: "test item",
+        slug: "test-item",
+        owner: owner._id,
+        managers: [owner._id, manager._id],
+      });
+
+      // register item to users
+      owner.items.push(testItem._id);
+      manager.items.push(testItem._id);
+      troublemaker.items.push(testItem._id);
+
+      await owner.save();
+      await manager.save();
+      await troublemaker.save();
+      await testItem.save();
+    });
+
+    // cleanup inserted items
+    afterAll(async () => {
+      await owner.remove();
+      await manager.remove();
+      await troublemaker.remove();
+      await Item.deleteMany({});
+    });
+
+    it("cannot unregister if item's owner", async () => {
+      // run a request that will be forbidden
+      const response = await supertest(server.server)
+        .post("/api/items/test-item/unregister")
+        .set("Authorization", "Bearer " + owner.createJWT())
+        .trustLocalhost();
+      expect(response.status).toBe(403);
+
+      // reload owner
+      owner = (await User.findById(owner._id.toHexString())) as IUser;
+
+      // check he's still bound to item
+      expect(
+        owner.items.some((itemId) => itemId.toHexString() == testItem._id)
+      ).toBe(true);
+    });
+
+    it("can unregister from item", async () => {
+      // run a request that will be work
+      const response = await supertest(server.server)
+        .post("/api/items/test-item/unregister")
+        .set("Authorization", "Bearer " + manager.createJWT())
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+
+      // reload manager and item
+      testItem = (await Item.findById(testItem._id.toHexString())) as IItem;
+      manager = (await User.findById(manager._id.toHexString())) as IUser;
+
+      // check manager is not bound to item anymore
+      expect(
+        manager.items.some((itemId) => itemId.toHexString() == testItem._id)
+      ).toBe(false);
+
+      // check he's not manager of item anymore
+      expect(testItem.managers.some((userId) => userId == manager._id)).toBe(
+        false
+      );
+    });
+
+    test.todo("cannot ban user if not item's manager");
+
+    test.todo("can ban user from item");
+  });
+
   // *** Remove
 
   describe("remove", () => {

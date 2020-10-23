@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import slugify from "slugify";
 import { storeUploadedFile } from "../middleware/store-image";
 import { IUser } from "../models/User";
+import { ForbiddenError } from "../errors";
 
 /**
  * Returns all items.
@@ -92,6 +93,52 @@ export const update = async (
     }
     item.images = req.body.images || item.images;
     item.equipments = req.body.equipments;
+    await item.save();
+
+    res.status(200).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Remove the relation between `req.targetUser` and `req.item`. If
+ * req.targetUser` is the owner, return 403 Forbidden becuase an Item cannot
+ * have no owner.
+ */
+export const unregister = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const requestorId = req.user?._id;
+    const user = req.targetUser as IUser;
+    const item = req.item as IItem;
+
+    // cannot unregister item's owner
+    if (item.owner.toHexString() == user._id) {
+      throw new ForbiddenError();
+    }
+
+    // cannot unregister other user if not item's manager
+    if (
+      user._id != requestorId &&
+      !item.managers.some((managerId) => managerId.toHexString() == requestorId)
+    ) {
+      throw new ForbiddenError();
+    }
+
+    // unregisters item from user
+    user.items = user.items.filter(
+      (itemId) => item._id.toHexString() != itemId.toHexString()
+    );
+    await user.save();
+
+    // unregisters user from item's manager
+    item.managers = item.managers.filter(
+      (managerId) => user._id.toHexString() != managerId.toHexString()
+    );
     await item.save();
 
     res.status(200).send();

@@ -4,6 +4,7 @@ import { nextAvailableSlug } from "../helpers";
 import { NotFoundError } from "../errors";
 import { IInfo, InfoSchema } from "./Info";
 import { IPlace, PlaceSchema } from "./Place";
+import { IUser } from "./User";
 
 // schema
 const ItemSchema = new mongoose.Schema({
@@ -70,7 +71,7 @@ export interface IItem extends mongoose.Document {
 
 // static methods
 ItemSchema.statics.findBySlug = async function (slug: string): Promise<IItem> {
-  const item = await this.findOne({ slug }).populate("managers").exec();
+  const item = await this.findOne({ slug }).exec();
 
   if (!item) {
     throw new NotFoundError();

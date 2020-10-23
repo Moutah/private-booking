@@ -2,7 +2,11 @@ import express from "express";
 import * as itemsController from "../../controllers/items";
 import * as itemInfosController from "../../controllers/item-infos";
 import * as itemPlacesController from "../../controllers/item-places";
-import { loadItemBySlug, loadMeAsTargetUser } from "../../middleware/models";
+import {
+  loadItemBySlug,
+  loadMeAsTargetUser,
+  loadTargetUserById,
+} from "../../middleware/models";
 import { handleImageUpload } from "../../middleware/store-image";
 
 // create router
@@ -19,6 +23,16 @@ itemsRouter.patch("/:slug", [
   loadItemBySlug("slug"),
   handleImageUpload(),
   itemsController.update,
+]);
+itemsRouter.post("/:slug/unregister", [
+  loadItemBySlug("slug"),
+  loadMeAsTargetUser(),
+  itemsController.unregister,
+]);
+itemsRouter.post("/:slug/ban/:userId", [
+  loadItemBySlug("slug"),
+  loadTargetUserById("userId"),
+  itemsController.unregister,
 ]);
 itemsRouter.delete("/:slug", [loadItemBySlug("slug"), itemsController.remove]);
 
