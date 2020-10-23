@@ -20,6 +20,7 @@ describe("Items", () => {
       // get items
       const response = await supertest(server.server)
         .get("/api/items")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
     });
@@ -37,6 +38,7 @@ describe("Items", () => {
       // run a request with invalid body
       const response = await supertest(server.server)
         .post("/api/items")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ name: undefined })
         .trustLocalhost();
 
@@ -59,6 +61,7 @@ describe("Items", () => {
       // run a request with valid body
       const response = await supertest(server.server)
         .post("/api/items")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ name: "item name" })
         .trustLocalhost();
 
@@ -72,6 +75,7 @@ describe("Items", () => {
       // run a request with the same name as above
       const response = await supertest(server.server)
         .post("/api/items")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ name: "item name" })
         .trustLocalhost();
 
@@ -89,6 +93,7 @@ describe("Items", () => {
       // run a request with the same name as above
       const response = await supertest(server.server)
         .post("/api/items")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ name: "item name" })
         .trustLocalhost();
 
@@ -101,6 +106,7 @@ describe("Items", () => {
       // run a request with valid body
       const response = await supertest(server.server)
         .post("/api/items")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .field("name", "Le item with images")
         .attach("images", "__tests__/images/lol.jpg")
         .trustLocalhost();
@@ -140,6 +146,7 @@ describe("Items", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .get("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body._id).toBe(testItem._id.toHexString());
@@ -173,6 +180,7 @@ describe("Items", () => {
       // run a request that will fail
       const response = await supertest(server.server)
         .patch("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(500);
     });
@@ -186,6 +194,7 @@ describe("Items", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .patch("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
           description: "new value",
           address: {
@@ -228,6 +237,7 @@ describe("Items", () => {
       // run a request that will work
       let response = await supertest(server.server)
         .patch("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
           address: {
             lat: 11,
@@ -257,6 +267,7 @@ describe("Items", () => {
       // run a request that will work
       response = await supertest(server.server)
         .patch("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
           address: {
             street: "da street",
@@ -287,6 +298,7 @@ describe("Items", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .patch("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
           description: "new desc",
         })
@@ -316,6 +328,7 @@ describe("Items", () => {
       // run a request with valid body
       const response = await supertest(server.server)
         .patch("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .attach("images", "__tests__/images/lol.jpg")
         .trustLocalhost();
 
@@ -364,6 +377,7 @@ describe("Items", () => {
       // run a request that will fail
       const response = await supertest(server.server)
         .delete("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(500);
     });
@@ -377,6 +391,7 @@ describe("Items", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .delete("/api/items/test-item")
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

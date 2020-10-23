@@ -57,6 +57,7 @@ UserSchema.methods.createJWT = function (): string {
       picture: this.profileImage,
       email: this.email,
       scope: this.isAdmin ? "Full" : "Write",
+      aud: process.env.APP_URL,
     },
     process.env.APP_KEY as string,
     { expiresIn: TOKEN_LIFESPAN }

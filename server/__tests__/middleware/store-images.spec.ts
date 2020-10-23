@@ -80,7 +80,9 @@ describe("Store image middleware", () => {
 
   it("can handle request with no image upload", async () => {
     // simulate request without images file
-    await supertest(testServer).post("/");
+    await supertest(testServer)
+      .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN);
     expect(requestResult.body.hasOwnProperty("images")).toBe(false);
   });
 
@@ -88,6 +90,7 @@ describe("Store image middleware", () => {
     // run a request with image
     await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .attach("images", "__tests__/images/lol.jpg");
 
     // validate image has been added to the request
@@ -105,6 +108,7 @@ describe("Store image middleware", () => {
     // run a request with one other image
     await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .field("images", ["/first/image/url.jpg"])
       .attach("images", "__tests__/images/lol.jpg");
 
@@ -120,6 +124,7 @@ describe("Store image middleware", () => {
     // run a request with two other images
     await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .field("images", ["/first/image/url.jpg", "/second/image/url.jpg"])
       .attach("images", "__tests__/images/lol.jpg");
 
@@ -136,6 +141,7 @@ describe("Store image middleware", () => {
     // run a request with non-image file
     await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .attach("images", "__tests__/images/lol.pdf");
 
     // validate image has been added to the request
@@ -146,9 +152,11 @@ describe("Store image middleware", () => {
     // run a request with same image twice
     await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .attach("images", "__tests__/images/lol.jpg");
     await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .attach("images", "__tests__/images/lol.jpg");
 
     // validate image slug has been added to the request
@@ -168,6 +176,7 @@ describe("Store image middleware", () => {
     // run a request with image name that has no extension
     let response = await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .attach("images", "__tests__/images/lol");
 
     // validate that server error is thrown
@@ -176,6 +185,7 @@ describe("Store image middleware", () => {
     // run a request with image name that has no name
     response = await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .attach("images", "__tests__/images/.jpg");
 
     // validate that server error is thrown
@@ -196,6 +206,7 @@ describe("Store image middleware", () => {
     // run a request with image
     const response = await supertest(testServer)
       .post("/")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .attach("images", "__tests__/images/lol.jpg");
 
     // validate that server error is thrown

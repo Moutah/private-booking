@@ -20,7 +20,10 @@ export const testServerErrorHandling = (
   jest.spyOn(console, "error").mockImplementationOnce(() => {});
 
   // run a request that will fail
-  const response = await supertest(server.server).get(url).trustLocalhost();
+  const response = await supertest(server.server)
+    .get(url)
+    .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+    .trustLocalhost();
   expect(response.status).toBe(500);
 };
 
@@ -39,20 +42,32 @@ export const testNotFoundErrorHandling = (
   let response;
   switch (method) {
     case "POST":
-      response = await request.post(url).trustLocalhost();
+      response = await request
+        .post(url)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .trustLocalhost();
       break;
 
     case "PATCH":
-      response = await request.patch(url).trustLocalhost();
+      response = await request
+        .patch(url)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .trustLocalhost();
       break;
 
     case "DELETE":
-      response = await request.delete(url).trustLocalhost();
+      response = await request
+        .delete(url)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .trustLocalhost();
       break;
 
     default:
     case "GET":
-      response = await request.get(url).trustLocalhost();
+      response = await request
+        .get(url)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .trustLocalhost();
       break;
   }
 

@@ -22,4 +22,6 @@ export const setupPassportJWTStrategy = () =>
 /**
  * Token validity duration in seconds.
  */
-export const TOKEN_LIFESPAN = 60 * 60;
+export const TOKEN_LIFESPAN = process.env.TOKEN_LIFESPAN
+  ? parseInt(process.env.TOKEN_LIFESPAN)
+  : 60 * 60;

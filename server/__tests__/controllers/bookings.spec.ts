@@ -32,6 +32,7 @@ describe("Bookings", () => {
       // get bookings
       const response = await supertest(server.server)
         .get(`${baseUrl}/bookings`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
     });
@@ -49,6 +50,7 @@ describe("Bookings", () => {
       // run a request with invalid body
       const response = await supertest(server.server)
         .post(`${baseUrl}/bookings`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ message: undefined })
         .trustLocalhost();
 
@@ -70,6 +72,7 @@ describe("Bookings", () => {
       const now = new Date();
       const response = await supertest(server.server)
         .post(`${baseUrl}/bookings`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ date: now })
         .trustLocalhost();
 
@@ -117,6 +120,7 @@ describe("Bookings", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .get(`${baseUrl}/bookings/${testBooking._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body._id).toBe(testBooking._id.toHexString());
@@ -157,6 +161,7 @@ describe("Bookings", () => {
       // run a request that will fail
       const response = await supertest(server.server)
         .patch(`${baseUrl}/bookings/${testBooking._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -177,6 +182,7 @@ describe("Bookings", () => {
       const now = new Date();
       const response = await supertest(server.server)
         .patch(`${baseUrl}/bookings/${testBooking._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
           status: "new value",
           comment: "new value",
@@ -205,6 +211,7 @@ describe("Bookings", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .patch(`${baseUrl}/bookings/${testBooking._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
           status: "",
           comment: "",
@@ -257,6 +264,7 @@ describe("Bookings", () => {
       // run a request that will fail
       const response = await supertest(server.server)
         .delete(`${baseUrl}/bookings/${testBooking._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -276,6 +284,7 @@ describe("Bookings", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .delete(`${baseUrl}/bookings/${testBooking._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

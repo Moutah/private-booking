@@ -31,6 +31,7 @@ describe("Posts", () => {
       // get posts
       const response = await supertest(server.server)
         .get(`${baseUrl}/posts`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
     });
@@ -48,6 +49,7 @@ describe("Posts", () => {
       // run a request with invalid body
       const response = await supertest(server.server)
         .post(`${baseUrl}/posts`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ message: undefined })
         .trustLocalhost();
 
@@ -68,6 +70,7 @@ describe("Posts", () => {
       // run a request with valid body
       const response = await supertest(server.server)
         .post(`${baseUrl}/posts`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({ message: "Le test message" })
         .trustLocalhost();
 
@@ -81,6 +84,7 @@ describe("Posts", () => {
       // run a request with valid body
       const response = await supertest(server.server)
         .post(`${baseUrl}/posts`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .field("message", "Le test post with images")
         .attach("images", "__tests__/images/lol.jpg")
         .trustLocalhost();
@@ -131,6 +135,7 @@ describe("Posts", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .get(`${baseUrl}/posts/${testPost._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body._id).toBe(testPost._id.toHexString());
@@ -168,6 +173,7 @@ describe("Posts", () => {
       // run a request that will fail
       const response = await supertest(server.server)
         .patch(`${baseUrl}/posts/${testPost._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -188,6 +194,7 @@ describe("Posts", () => {
       const now = new Date();
       const response = await supertest(server.server)
         .patch(`${baseUrl}/posts/${testPost._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
           message: "new value",
           createdAt: now,
@@ -239,6 +246,7 @@ describe("Posts", () => {
       // run a request that will fail
       const response = await supertest(server.server)
         .delete(`${baseUrl}/posts/${testPost._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -258,6 +266,7 @@ describe("Posts", () => {
       // run a request that will work
       const response = await supertest(server.server)
         .delete(`${baseUrl}/posts/${testPost._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});

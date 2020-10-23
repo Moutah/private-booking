@@ -8,6 +8,7 @@ describe("Api", () => {
   it("can play ping-pong", async () => {
     const response = await supertest(server.server)
       .get("/api/ping")
+      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
       .trustLocalhost();
     expect(response.status).toBe(200);
     expect(response.body).toBe("pong");

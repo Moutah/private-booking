@@ -1,12 +1,11 @@
-import fs from "fs";
 import supertest from "supertest";
 import * as server from "../../src/server";
-import Info from "../../src/models/Info";
+import Place from "../../src/models/Place";
 import Item from "../../src/models/Item";
-import { testNotFoundErrorHandling } from "./utils";
+import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 
-describe("Item infos", () => {
-  let item = new Item({ name: "base item infos", slug: "base-item-infos" });
+describe("Item places", () => {
+  let item = new Item({ name: "base item places", slug: "base-item-places" });
   const baseUrl = `/api/items/${item.slug}`;
 
   beforeAll(async () => {
@@ -21,16 +20,17 @@ describe("Item infos", () => {
   // *** Insert
 
   describe("insert", () => {
-    // cleanup inserted infos
+    // cleanup inserted places
     afterAll(async () => {
-      await Info.deleteMany({});
+      await Place.deleteMany({});
     });
 
     it("won't store invalid request", async () => {
       // run a request with invalid body
       const response = await supertest(server.server)
-        .post(`${baseUrl}/infos`)
-        .send({ message: undefined })
+        .post(`${baseUrl}/places`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .send({ description: undefined })
         .trustLocalhost();
 
       // response is failure
@@ -38,14 +38,14 @@ describe("Item infos", () => {
       expect(response.body).toMatchObject({
         errors: [
           {
-            message: "Info message is required.",
+            message: "Place description is required.",
             type: "required",
-            path: "message",
+            path: "description",
           },
           {
-            message: "Info title is required.",
+            message: "Place name is required.",
             type: "required",
-            path: "title",
+            path: "name",
           },
         ],
       });
@@ -54,39 +54,17 @@ describe("Item infos", () => {
     it("can store valid request", async () => {
       // run a request with valid body
       const response = await supertest(server.server)
-        .post(`${baseUrl}/infos`)
-        .send({ title: "Le test title", message: "Le test message" })
+        .post(`${baseUrl}/places`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .send({ name: "Le test name", description: "Le test description" })
         .trustLocalhost();
 
-      // response is successful with newly created info
+      // response is successful with newly created place
       expect(response.status).toBe(201);
-      const lastInfo = response.body.infos[response.body.infos.length - 1];
-      expect(lastInfo).toBeTruthy();
-      expect(lastInfo.title).toBe("Le test title");
-      expect(lastInfo.message).toBe("Le test message");
-    });
-
-    it("can handle images upload", async () => {
-      // run a request with valid body
-      const response = await supertest(server.server)
-        .post(`${baseUrl}/infos`)
-        .field("title", "Le test title with images")
-        .field("message", "Le test message with images")
-        .attach("images", "__tests__/images/lol.jpg")
-        .trustLocalhost();
-
-      // response is successful with newly created post
-      expect(response.status).toBe(201);
-      const lastInfo = response.body.infos[response.body.infos.length - 1];
-      expect(lastInfo).toBeTruthy();
-      expect(lastInfo.title).toBe("Le test title with images");
-      expect(lastInfo.message).toBe("Le test message with images");
-      expect(lastInfo.image).toStrictEqual(
-        `/images/${response.body.slug}/lol.jpg`
-      );
-
-      // cleanup
-      fs.rmdirSync(`../storage/${response.body.slug}`, { recursive: true });
+      const lastPlace = response.body.places[response.body.places.length - 1];
+      expect(lastPlace).toBeTruthy();
+      expect(lastPlace.name).toBe("Le test name");
+      expect(lastPlace.description).toBe("Le test description");
     });
   });
 
@@ -94,17 +72,17 @@ describe("Item infos", () => {
 
   describe("update", () => {
     // create and cleanup a model we'll work with
-    let testInfo = new Info({
-      title: "Le test title",
-      message: "Le test message",
+    let testPlace = new Place({
+      name: "Le test name",
+      description: "Le test description",
       _id: "000000000000000000000001",
     });
     beforeAll(async () => {
-      item.infos.push(testInfo);
+      item.places.push(testPlace);
       await item.save();
     });
     afterAll(async () => {
-      await item.infos.id(testInfo._id).remove();
+      await item.places.id(testPlace._id).remove();
       await item.save();
     });
 
@@ -126,11 +104,12 @@ describe("Item infos", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .patch(`${baseUrl}/infos/${testInfo._id}`)
-        // we need to send a body because the error will come after info creation
+        .patch(`${baseUrl}/places/${testPlace._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        // we need to send a body because the error will come after place creation
         .send({
-          title: "Le new test title",
-          message: "Le new test message",
+          name: "Le new test name",
+          description: "Le new test description",
         })
         .trustLocalhost();
       expect(response.status).toBe(500);
@@ -143,23 +122,24 @@ describe("Item infos", () => {
       "can handle not found",
       testNotFoundErrorHandling(
         "PATCH",
-        `${baseUrl}/infos/000000000000000000000000`
+        `${baseUrl}/places/000000000000000000000000`
       )
     );
 
-    it("can update info", async () => {
+    it("can update place", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .patch(`${baseUrl}/infos/${testInfo._id}`)
+        .patch(`${baseUrl}/places/${testPlace._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
-          title: "new value",
-          message: "new value",
+          name: "new value",
+          description: "new value",
         })
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});
 
-      // get info from db
+      // get place from db
       const dbItem = await Item.findById(item._id);
 
       if (!dbItem) {
@@ -167,24 +147,25 @@ describe("Item infos", () => {
       }
 
       // validate changes
-      const lastInfo = dbItem.infos[dbItem.infos.length - 1];
-      expect(lastInfo.title).toBe("new value");
-      expect(lastInfo.message).toBe("new value");
+      const lastPlace = dbItem.places[dbItem.places.length - 1];
+      expect(lastPlace.name).toBe("new value");
+      expect(lastPlace.description).toBe("new value");
     });
 
     it("ignores falsy values for required fields", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .patch(`${baseUrl}/infos/${testInfo._id}`)
+        .patch(`${baseUrl}/places/${testPlace._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .send({
-          title: "",
-          message: "",
+          name: "",
+          description: "",
         })
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});
 
-      // get info from db
+      // get place from db
       const dbItem = await Item.findById(item._id);
 
       if (!dbItem) {
@@ -192,35 +173,9 @@ describe("Item infos", () => {
       }
 
       // validate changes
-      const lastInfo = dbItem.infos[dbItem.infos.length - 1];
-      expect(lastInfo.title).toBe("new value");
-      expect(lastInfo.message).toBe("new value");
-    });
-
-    it("can handle image upload", async () => {
-      // run a request with valid body
-      const response = await supertest(server.server)
-        .patch(`${baseUrl}/infos/${testInfo._id}`)
-        .attach("images", "__tests__/images/lol.jpg")
-        .trustLocalhost();
-
-      // response is successful with newly created post
-      expect(response.status).toBe(200);
-      expect(response.body).toStrictEqual({});
-
-      // get info from db
-      const dbItem = await Item.findById(item._id);
-
-      if (!dbItem) {
-        throw new Error("Could not find test item in database anymore");
-      }
-
-      // validate changes
-      const lastInfo = dbItem.infos[dbItem.infos.length - 1];
-      expect(lastInfo.image).toBe(`/images/${dbItem.slug}/lol.jpg`);
-
-      // cleanup
-      fs.rmdirSync(`../storage/${dbItem.slug}`, { recursive: true });
+      const lastPlace = dbItem.places[dbItem.places.length - 1];
+      expect(lastPlace.name).toBe("new value");
+      expect(lastPlace.description).toBe("new value");
     });
   });
 
@@ -228,17 +183,17 @@ describe("Item infos", () => {
 
   describe("remove", () => {
     // create and cleanup a model we'll work with
-    let testInfo = new Info({
-      title: "Le test title",
-      message: "Le test message",
+    let testPlace = new Place({
+      name: "Le test name",
+      description: "Le test description",
       _id: "000000000000000000000002",
     });
     beforeAll(async () => {
-      item.infos.push(testInfo);
+      item.places.push(testPlace);
       await item.save();
     });
     afterAll(async () => {
-      await item.infos.id(testInfo._id).remove();
+      await item.places.id(testPlace._id).remove();
       await item.save();
     });
 
@@ -260,7 +215,8 @@ describe("Item infos", () => {
 
       // run a request that will fail
       const response = await supertest(server.server)
-        .delete(`${baseUrl}/infos/${testInfo._id}`)
+        .delete(`${baseUrl}/places/${testPlace._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(500);
 
@@ -272,27 +228,28 @@ describe("Item infos", () => {
       "can handle not found",
       testNotFoundErrorHandling(
         "DELETE",
-        `${baseUrl}/infos/000000000000000000000000`
+        `${baseUrl}/places/000000000000000000000000`
       )
     );
 
-    it("can delete info", async () => {
+    it("can delete place", async () => {
       // run a request that will work
       const response = await supertest(server.server)
-        .delete(`${baseUrl}/infos/${testInfo._id}`)
+        .delete(`${baseUrl}/places/${testPlace._id}`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({});
 
-      // get info from db
+      // get place from db
       const dbItem = await Item.findById(item._id);
 
       if (!dbItem) {
         throw new Error("Could not find test item in database anymore");
       }
 
-      // check info is not in database anymore
-      const match = dbItem.infos.id(testInfo._id);
+      // check place is not in database anymore
+      const match = dbItem.places.id(testPlace._id);
       expect(match).toBe(null);
     });
   });
