@@ -468,9 +468,43 @@ describe("Items", () => {
       );
     });
 
-    test.todo("cannot ban user if not item's manager");
+    it("cannot ban user if not item's manager", async () => {
+      // run a request that will be forbidden
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/ban/${owner._id.toHexString()}`)
+        .set("Authorization", "Bearer " + troublemaker.createJWT())
+        .trustLocalhost();
+      expect(response.status).toBe(403);
 
-    test.todo("can ban user from item");
+      // reload owner
+      owner = (await User.findById(owner._id.toHexString())) as IUser;
+
+      // check he's still bound to item
+      expect(
+        owner.items.some((itemId) => itemId.toHexString() == testItem._id)
+      ).toBe(true);
+    });
+
+    it("can ban user from item", async () => {
+      // run a request that will be forbidden
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/ban/${troublemaker._id.toHexString()}`)
+        .set("Authorization", "Bearer " + owner.createJWT())
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+
+      // reload troublemaker
+      troublemaker = (await User.findById(
+        troublemaker._id.toHexString()
+      )) as IUser;
+
+      // check he's not bound to item anymore
+      expect(
+        troublemaker.items.some(
+          (itemId) => itemId.toHexString() == testItem._id
+        )
+      ).toBe(false);
+    });
   });
 
   // *** Remove
