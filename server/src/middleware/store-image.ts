@@ -1,9 +1,7 @@
 import fs from "fs";
 import { NextFunction, Request, Response } from "express";
-import { IItem } from "../models/Item";
 import fileUpload from "express-fileupload";
 import slugify from "slugify";
-import { itemsRouter } from "../routes/models/items";
 import { nextAvailableSlug } from "../helpers";
 
 /**
@@ -28,11 +26,19 @@ export const handleImageUpload = () => async (
       return next();
     }
 
-    // accessing things
-    const item = req.item as IItem;
+    // getting owner
+    const imageOwner = req.item ? req.item.slug : "users";
+
+    // updating image name
+    if (imageOwner == "users") {
+      req.files.images.name = req.user?._id + "." + fileExtension;
+    }
 
     // store file
-    const fileRelativePath = await storeUploadedFile(req.files.images, item);
+    const fileRelativePath = await storeUploadedFile(
+      req.files.images,
+      imageOwner
+    );
 
     // adds the new path to req
     const fileUrl = `/images/${fileRelativePath}`;
@@ -54,17 +60,17 @@ export const handleImageUpload = () => async (
  * Stores the given `file` in the storage folder of given `item`. Resolves on
  * the stored file relative path in the storage.
  * @param {fileUpload.UploadedFile} file
- * @param {IItem} item
+ * @param {string imageOwnerDir
  * @return {Promise<string>}
  */
 export const storeUploadedFile = async (
   file: fileUpload.UploadedFile,
-  item: IItem
+  imageOwnerDir: string
 ) => {
   return new Promise((resolve, reject) => {
     // get storage paths
     const storagePath = `${process.env.PWD}/${process.env.STORAGE_PATH}`;
-    const itemStoragePath = `${storagePath}/${item.slug}`;
+    const itemStoragePath = `${storagePath}/${imageOwnerDir}`;
 
     // get name and extension
     let { basename: fileName, extension: fileExtension } = getFileNameParts(
@@ -87,7 +93,7 @@ export const storeUploadedFile = async (
     }
 
     // move the new file to its destination
-    const fileRelativePath = `${item.slug}/${fileSlug}.${fileExtension}`;
+    const fileRelativePath = `${imageOwnerDir}/${fileSlug}.${fileExtension}`;
     file.mv(`${storagePath}/${fileRelativePath}`, (err) => {
       if (err) {
         reject(err);

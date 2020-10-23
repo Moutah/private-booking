@@ -64,9 +64,49 @@ describe("Users", () => {
       expect(response.body.password).toBeUndefined();
     });
 
-    test.todo("can update me");
+    it("can update me", async () => {
+      // run a request that will work
+      const response = await supertest(server.server)
+        .patch("/api/users/me")
+        .set("Authorization", "Bearer " + alice.createJWT())
+        .send({
+          name: "George",
+          email: "george@mail.com",
+          password: "alice is now george",
+        })
+        .trustLocalhost();
 
-    test.todo("can update my profile picture");
+      // request successful
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({});
+
+      // get updated user
+      const george = (await User.findById(alice._id.toHexString())) as IUser;
+      expect(george.name).toBe("George");
+      expect(george.email).toBe("george@mail.com");
+      expect(george.password).not.toBe("alice is now george"); // password should've been hased
+    });
+
+    it("can update my profile picture", async () => {
+      // run a request that will work
+      const response = await supertest(server.server)
+        .patch("/api/users/me")
+        .set("Authorization", "Bearer " + bob.createJWT())
+        .attach("images", "__tests__/images/lol.jpg")
+        .trustLocalhost();
+
+      // request successful
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({});
+
+      // update bob
+      bob = (await User.findById(bob._id.toHexString())) as IUser;
+
+      // validate changes
+      expect(bob.profileImage).toBe(
+        `/images/users/${bob._id.toHexString()}.jpg`
+      );
+    });
   });
 
   describe("update", () => {

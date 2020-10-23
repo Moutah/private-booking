@@ -41,7 +41,10 @@ export const insert = async (
     // handle file upload
     if (req.files) {
       // store file
-      const fileRelativePath = await storeUploadedFile(req.files.images, item);
+      const fileRelativePath = await storeUploadedFile(
+        req.files.images,
+        item.slug
+      );
 
       // adds the new path to item
       item.images = [`/images/${fileRelativePath}`];
