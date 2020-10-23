@@ -7,7 +7,7 @@ dotenv.config();
 // create a test JWT
 process.env.TEST_TOKEN = jsonwebtoken.sign(
   {
-    sub: -1,
+    sub: "000000000000000000000000",
     name: "test token",
   },
   process.env.APP_KEY as string,

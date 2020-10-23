@@ -1,8 +1,7 @@
-import express, { Request, Response, Express } from "express";
+import express, { Request, Response } from "express";
 import passport from "passport";
-import { TOKEN_LIFESPAN } from "../auth";
+import { generateNewToken } from "../controllers/auth";
 import { handleError } from "../middleware/error";
-import User from "../models/User";
 import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
@@ -21,27 +20,13 @@ export const apiRoutes = () => {
     res.json("pong");
   });
 
-  // bind routes
+  // bind routers
   routes.use("/items", itemsRouter);
   routes.use("/items/:itemSlug/posts", postsRouter);
   routes.use("/items/:itemSlug/bookings", bookingsRouter);
-  routes.get("/new-token", async (req: Request, res: Response) => {
-    if (!req.user) {
-      throw new Error("No user for this request");
-    }
 
-    // get user
-    const user = await User.findById((req.user as any).id);
-
-    // not found
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // create and returns a new JWT
-    const token = user.createJWT();
-    res.json({ token, expiresIn: TOKEN_LIFESPAN - 1 });
-  });
+  // bind routes
+  routes.get("/new-token", generateNewToken);
 
   // error handling middleware
   routes.use(handleError);

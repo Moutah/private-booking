@@ -1,7 +1,12 @@
 import passport from "passport";
 import { Strategy, ExtractJwt } from "passport-jwt";
 
-export const setupPassportJWTStrategy = () =>
+export const setupPassportJWTStrategy = () => {
+  // set token lifespan from env value
+  if (process.env.TOKEN_LIFESPAN) {
+    TOKEN_LIFESPAN = parseInt(process.env.TOKEN_LIFESPAN);
+  }
+
   passport.use(
     "jwt",
     new Strategy(
@@ -10,18 +15,13 @@ export const setupPassportJWTStrategy = () =>
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       },
       async (token, done) => {
-        try {
-          return done(null, { id: token.sub });
-        } catch (error) {
-          done(error);
-        }
+        return done(null, { id: token.sub });
       }
     )
   );
+};
 
 /**
  * Token validity duration in seconds.
  */
-export const TOKEN_LIFESPAN = process.env.TOKEN_LIFESPAN
-  ? parseInt(process.env.TOKEN_LIFESPAN)
-  : 60 * 60;
+export let TOKEN_LIFESPAN = 60 * 60;
