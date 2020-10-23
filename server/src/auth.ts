@@ -15,7 +15,7 @@ export const setupPassportJWTStrategy = () => {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       },
       async (token, done) => {
-        return done(null, { id: token.sub });
+        return done(null, { _id: token.sub });
       }
     )
   );

@@ -69,6 +69,8 @@ describe("Items", () => {
       expect(response.status).toBe(201);
       expect(response.body).toBeTruthy();
       expect(response.body.name).toBe("item name");
+      expect(response.body.owner).toBe(process.env.TEST_USER_ID);
+      expect(response.body.managers).toStrictEqual([process.env.TEST_USER_ID]);
     });
 
     it("handles duplicate names", async () => {

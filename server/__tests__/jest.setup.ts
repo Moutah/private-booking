@@ -5,9 +5,10 @@ import jsonwebtoken from "jsonwebtoken";
 dotenv.config();
 
 // create a test JWT
+process.env.TEST_USER_ID = "000000000000000000000000";
 process.env.TEST_TOKEN = jsonwebtoken.sign(
   {
-    sub: "000000000000000000000000",
+    sub: process.env.TEST_USER_ID,
     name: "test token",
   },
   process.env.APP_KEY as string,

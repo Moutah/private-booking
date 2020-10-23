@@ -9,5 +9,9 @@ declare global {
       item?: IItem;
       post?: IPost;
     }
+
+    interface User {
+      _id: string;
+    }
   }
 }

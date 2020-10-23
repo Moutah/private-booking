@@ -31,6 +31,8 @@ export const insert = async (
     // create item
     let item = new Item({
       ...req.body,
+      owner: req.user?._id,
+      managers: [req.user?._id],
       slug: slugify(req.body.name || ""),
     });
 

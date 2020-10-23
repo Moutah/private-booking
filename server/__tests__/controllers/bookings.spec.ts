@@ -81,6 +81,7 @@ describe("Bookings", () => {
       expect(response.body).toBeTruthy();
       expect(response.body.date).toBe(now.toJSON());
       expect(response.body.status).toBe("pending");
+      expect(response.body.user).toBe(process.env.TEST_USER_ID);
     });
   });
 

@@ -78,6 +78,7 @@ describe("Posts", () => {
       expect(response.status).toBe(201);
       expect(response.body).toBeTruthy();
       expect(response.body.message).toBe("Le test message");
+      expect(response.body.author).toBe(process.env.TEST_USER_ID);
     });
 
     it("can handle images upload", async () => {

@@ -11,7 +11,7 @@ export const index = async (
   next: NextFunction
 ) => {
   try {
-    const bookings = await Booking.find({ item: (req.item as IItem)._id });
+    const bookings = await Booking.find({ item: req.item?._id });
     res.json(bookings);
   } catch (err) {
     next(err);
@@ -30,7 +30,8 @@ export const insert = async (
     // create booking
     let booking = new Booking({
       ...req.body,
-      item: (req.item as IItem)._id,
+      item: req.item?._id,
+      user: req.user?._id,
       createdAt: new Date(),
     });
     await booking.save();

@@ -16,7 +16,7 @@ export const generateNewToken = async (
   next: NextFunction
 ) => {
   // get user
-  const user = await User.findById((req.user as any).id);
+  const user = await User.findById(req.user?._id);
 
   // not found
   if (!user) {

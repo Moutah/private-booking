@@ -11,7 +11,7 @@ export const index = async (
   next: NextFunction
 ) => {
   try {
-    const posts = await Post.find({ item: (req.item as IItem)._id });
+    const posts = await Post.find({ item: req.item?._id });
     res.json(posts);
   } catch (err) {
     next(err);
@@ -30,7 +30,8 @@ export const insert = async (
     // create post
     let post = new Post({
       ...req.body,
-      item: (req.item as IItem)._id,
+      author: req.user?._id,
+      item: req.item?._id,
       date: new Date(),
     });
     await post.save();
