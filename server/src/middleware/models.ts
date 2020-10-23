@@ -3,6 +3,7 @@ import { NotFoundError } from "../errors";
 import Booking from "../models/Booking";
 import Item from "../models/Item";
 import Post from "../models/Post";
+import User from "../models/User";
 
 /**
  * Returns an express middleware function that loads the item with slug
@@ -69,6 +70,57 @@ export const loadBookingById = (param: string) => async (
     }
 
     req.booking = booking;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Returns an express middleware function that loads the user with id
+ * matching the value of `req.params[param]` into `req.targetUser`.
+ * @param {string} param Name of the paramter to use in `req.params`
+ * @throws `NotFoundError`
+ */
+export const loadTargetUserById = (param: string) => async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.params[param]);
+
+    // not found
+    if (!user) {
+      throw new NotFoundError();
+    }
+
+    req.targetUser = user;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Returns an express middleware function that loads the user with id
+ * matching the value of `req.params[param]` into `req.targetUser`.
+ * @throws `NotFoundError`
+ */
+export const loadMeAsTargetUser = () => async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.user?._id);
+
+    // not found
+    if (!user) {
+      throw new NotFoundError();
+    }
+
+    req.targetUser = user;
     next();
   } catch (err) {
     next(err);

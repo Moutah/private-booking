@@ -2,7 +2,7 @@ import express from "express";
 import * as itemsController from "../../controllers/items";
 import * as itemInfosController from "../../controllers/item-infos";
 import * as itemPlacesController from "../../controllers/item-places";
-import { loadItemBySlug } from "../../middleware/models";
+import { loadItemBySlug, loadMeAsTargetUser } from "../../middleware/models";
 import { handleImageUpload } from "../../middleware/store-image";
 
 // create router
@@ -13,7 +13,7 @@ export const itemsRouter = express.Router({
 // *** Item
 
 itemsRouter.get("/", [itemsController.index]);
-itemsRouter.post("/", [itemsController.insert]);
+itemsRouter.post("/", [loadMeAsTargetUser(), itemsController.insert]);
 itemsRouter.get("/:slug", [loadItemBySlug("slug"), itemsController.get]);
 itemsRouter.patch("/:slug", [
   loadItemBySlug("slug"),

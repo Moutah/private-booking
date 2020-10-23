@@ -2,6 +2,7 @@ import Item, { IItem } from "../models/Item";
 import { NextFunction, Request, Response } from "express";
 import slugify from "slugify";
 import { storeUploadedFile } from "../middleware/store-image";
+import { IUser } from "../models/User";
 
 /**
  * Returns all items.
@@ -46,6 +47,11 @@ export const insert = async (
     }
 
     await item.save();
+
+    // add item to user
+    const user = req.targetUser as IUser;
+    user.items.push(item._id);
+    await user.save();
 
     // return item
     res.status(201).json(item);

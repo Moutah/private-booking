@@ -3,6 +3,7 @@ import supertest from "supertest";
 import * as server from "../../src/server";
 import Item, { IItem } from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
+import User, { IUser } from "../../src/models/User";
 
 describe("Items", () => {
   beforeAll(server.setup);
@@ -29,8 +30,20 @@ describe("Items", () => {
   // *** Insert
 
   describe("insert", () => {
+    // create test user
+    let testUser: IUser;
+    beforeAll(async () => {
+      testUser = new User({
+        name: "test user",
+        email: "test@mail.com",
+        password: "lol-password",
+      });
+      await testUser.save();
+    });
+
     // cleanup inserted items
     afterAll(async () => {
+      await testUser.remove();
       await Item.deleteMany({});
     });
 
@@ -38,7 +51,7 @@ describe("Items", () => {
       // run a request with invalid body
       const response = await supertest(server.server)
         .post("/api/items")
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .set("Authorization", "Bearer " + testUser.createJWT())
         .send({ name: undefined })
         .trustLocalhost();
 
@@ -61,7 +74,7 @@ describe("Items", () => {
       // run a request with valid body
       const response = await supertest(server.server)
         .post("/api/items")
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .set("Authorization", "Bearer " + testUser.createJWT())
         .send({ name: "item name" })
         .trustLocalhost();
 
@@ -69,15 +82,23 @@ describe("Items", () => {
       expect(response.status).toBe(201);
       expect(response.body).toBeTruthy();
       expect(response.body.name).toBe("item name");
-      expect(response.body.owner).toBe(process.env.TEST_USER_ID);
-      expect(response.body.managers).toStrictEqual([process.env.TEST_USER_ID]);
+      expect(response.body.owner).toBe(testUser._id.toHexString());
+      expect(response.body.managers).toStrictEqual([
+        testUser._id.toHexString(),
+      ]);
+
+      // reload testUser
+      testUser = (await User.findById(testUser._id.toHexString())) as IUser;
+      expect(testUser.items.map((id) => id.toHexString())).toEqual([
+        response.body._id,
+      ]);
     });
 
     it("handles duplicate names", async () => {
       // run a request with the same name as above
       const response = await supertest(server.server)
         .post("/api/items")
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .set("Authorization", "Bearer " + testUser.createJWT())
         .send({ name: "item name" })
         .trustLocalhost();
 
@@ -95,7 +116,7 @@ describe("Items", () => {
       // run a request with the same name as above
       const response = await supertest(server.server)
         .post("/api/items")
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .set("Authorization", "Bearer " + testUser.createJWT())
         .send({ name: "item name" })
         .trustLocalhost();
 
@@ -108,7 +129,7 @@ describe("Items", () => {
       // run a request with valid body
       const response = await supertest(server.server)
         .post("/api/items")
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .set("Authorization", "Bearer " + testUser.createJWT())
         .field("name", "Le item with images")
         .attach("images", "__tests__/images/lol.jpg")
         .trustLocalhost();
