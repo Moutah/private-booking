@@ -38,7 +38,7 @@ export const update = async (
     const place = item.places.id(req.params.placeId);
 
     if (!place) {
-      throw new NotFoundError();
+      throw new NotFoundError("Place not found");
     }
 
     // update item
@@ -66,7 +66,7 @@ export const remove = async (
     const place = item.places.id(req.params.placeId);
 
     if (!place) {
-      throw new NotFoundError();
+      throw new NotFoundError("Place not found");
     }
 
     // remove place

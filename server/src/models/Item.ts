@@ -74,7 +74,7 @@ ItemSchema.statics.findBySlug = async function (slug: string): Promise<IItem> {
   const item = await this.findOne({ slug }).exec();
 
   if (!item) {
-    throw new NotFoundError();
+    throw new NotFoundError("Item not found");
   }
 
   return item;

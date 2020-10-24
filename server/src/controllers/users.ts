@@ -9,20 +9,6 @@ export const me = async (req: Request, res: Response) => {
 };
 
 /**
- * Invites the user with email matching `req.body.email` to join
- * `req.body.item`. If `req.body.asManager` is truthy, the user will be added
- * as manager for the item. If no user exists for the given `req.body.email`,
- * the user will be created and notified to complete his registration.
- */
-export const invite = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  res.json("invite");
-};
-
-/**
  * Update user given in `req.targetUser` with content in `req.body`.
  */
 export const update = async (

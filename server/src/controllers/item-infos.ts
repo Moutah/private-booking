@@ -43,7 +43,7 @@ export const update = async (
     const info = item.infos.id(req.params.infoId);
 
     if (!info) {
-      throw new NotFoundError();
+      throw new NotFoundError("Info not found");
     }
 
     // update item
@@ -71,7 +71,7 @@ export const remove = async (
     const info = item.infos.id(req.params.infoId);
 
     if (!info) {
-      throw new NotFoundError();
+      throw new NotFoundError("Info not found");
     }
 
     // remove info

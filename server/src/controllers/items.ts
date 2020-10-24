@@ -105,6 +105,20 @@ export const update = async (
 };
 
 /**
+ * Invites the user with email matching `req.body.email` to join
+ * `req.item`. If `req.body.asManager` is truthy, the user will be added as
+ * manager for the item. If no user exists for the given `req.body.email`, the
+ * user will be created and notified to complete his registration.
+ */
+export const invite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  res.json("invite");
+};
+
+/**
  * Remove the relation between `req.targetUser` and `req.item`. If
  * req.targetUser` is the owner, return 403 Forbidden becuase an Item cannot
  * have no owner.
@@ -121,7 +135,7 @@ export const unregister = async (
 
     // cannot unregister item's owner
     if (item.owner.toHexString() == user._id) {
-      throw new ForbiddenError();
+      throw new ForbiddenError("Cannot unregister item's owner");
     }
 
     // cannot unregister other user if not item's manager
@@ -129,7 +143,7 @@ export const unregister = async (
       user._id != requestorId &&
       !item.managers.some((managerId) => managerId.toHexString() == requestorId)
     ) {
-      throw new ForbiddenError();
+      throw new ForbiddenError("Insufficient rights");
     }
 
     // unregisters item from user

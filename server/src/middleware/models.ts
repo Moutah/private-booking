@@ -40,7 +40,7 @@ export const loadPostById = (param: string) => async (
 
     // not found
     if (!post) {
-      throw new NotFoundError();
+      throw new NotFoundError("Post not found");
     }
 
     req.post = post;
@@ -66,7 +66,7 @@ export const loadBookingById = (param: string) => async (
 
     // not found
     if (!booking) {
-      throw new NotFoundError();
+      throw new NotFoundError("Booking not found");
     }
 
     req.booking = booking;
@@ -92,7 +92,7 @@ export const loadTargetUserById = (param: string) => async (
 
     // not found
     if (!user) {
-      throw new NotFoundError();
+      throw new NotFoundError("User not found");
     }
 
     req.targetUser = user;
@@ -117,7 +117,7 @@ export const loadMeAsTargetUser = () => async (
 
     // not found
     if (!user) {
-      throw new NotFoundError();
+      throw new NotFoundError("User not found");
     }
 
     req.targetUser = user;

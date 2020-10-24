@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ForbiddenError, NotFoundError } from "../errors";
+import { ForbiddenError } from "../errors";
 import User from "../models/User";
 
 /**
@@ -17,7 +17,7 @@ export const verifyUserIsAdmin = () => async (
 
     // user not found or not admin
     if (!user?.isAdmin) {
-      throw new ForbiddenError();
+      throw new ForbiddenError("Insufficient rights");
     }
 
     next();
