@@ -18,13 +18,8 @@ usersRouter.patch("/me", [
   handleImageUpload(),
   usersController.update,
 ]);
-usersRouter.patch("/:userId", [
+usersRouter.patch("/users/:userId", [
   verifyUserIsAdmin(),
   loadTargetUserById("userId"),
   usersController.update,
-]);
-usersRouter.delete("/:userId", [
-  verifyUserIsAdmin(),
-  loadTargetUserById("userId"),
-  usersController.remove,
 ]);

@@ -50,14 +50,3 @@ export const update = async (
     next(err);
   }
 };
-
-/**
- * Remove user given in `req.targetUser` from the database.
- */
-export const remove = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  res.json("remove");
-};

@@ -36,7 +36,7 @@ export const loadPostById = (param: string) => async (
   next: NextFunction
 ) => {
   try {
-    const post = await Post.findById(req.params[param]);
+    const post = await Post.findById(req.params[param]).exec();
 
     // not found
     if (!post) {
@@ -62,7 +62,7 @@ export const loadBookingById = (param: string) => async (
   next: NextFunction
 ) => {
   try {
-    const booking = await Booking.findById(req.params[param]);
+    const booking = await Booking.findById(req.params[param]).exec();
 
     // not found
     if (!booking) {
@@ -88,7 +88,7 @@ export const loadTargetUserById = (param: string) => async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findById(req.params[param]);
+    const user = await User.findById(req.params[param]).exec();
 
     // not found
     if (!user) {
@@ -113,7 +113,7 @@ export const loadMeAsTargetUser = () => async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findById(req.user?._id);
+    const user = await User.findById(req.user?._id).exec();
 
     // not found
     if (!user) {

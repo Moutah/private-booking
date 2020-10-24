@@ -35,41 +35,33 @@ export const testServerErrorHandling = (
  */
 export const testNotFoundErrorHandling = (
   method: string,
-  url: string
+  url: string,
+  token?: string
 ) => async () => {
   // run a request that will not found
   const request = supertest(server.server);
-  let response;
+  let action;
   switch (method) {
     case "POST":
-      response = await request
-        .post(url)
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
-        .trustLocalhost();
+      action = request.post(url);
       break;
 
     case "PATCH":
-      response = await request
-        .patch(url)
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
-        .trustLocalhost();
+      action = request.patch(url);
       break;
 
     case "DELETE":
-      response = await request
-        .delete(url)
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
-        .trustLocalhost();
+      action = request.delete(url);
       break;
 
     default:
     case "GET":
-      response = await request
-        .get(url)
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
-        .trustLocalhost();
+      action = request.get(url);
       break;
   }
+  const response = await action
+    .set("Authorization", "Bearer " + (token || process.env.TEST_TOKEN))
+    .trustLocalhost();
 
   expect(response.status).toBe(404);
   expect(response.body).toBe("Not found");

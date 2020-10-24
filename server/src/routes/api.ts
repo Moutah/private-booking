@@ -25,7 +25,7 @@ export const apiRoutes = () => {
   routes.use("/items", itemsRouter);
   routes.use("/items/:itemSlug/posts", postsRouter);
   routes.use("/items/:itemSlug/bookings", bookingsRouter);
-  routes.use("/users", usersRouter);
+  routes.use("/", usersRouter);
 
   // bind routes
   routes.get("/new-token", generateNewToken);

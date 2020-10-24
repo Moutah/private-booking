@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ForbiddenError } from "../errors";
+import { ForbiddenError, NotFoundError } from "../errors";
 import User from "../models/User";
 
 /**
@@ -13,7 +13,7 @@ export const verifyUserIsAdmin = () => async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findById(req.user?._id);
+    const user = await User.findById(req.user?._id).exec();
 
     // user not found or not admin
     if (!user?.isAdmin) {
