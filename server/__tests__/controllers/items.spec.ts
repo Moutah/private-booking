@@ -379,6 +379,7 @@ describe("Items", () => {
   describe("Unregister", () => {
     let owner: IUser;
     let manager: IUser;
+    let user: IUser;
     let troublemaker: IUser;
     let testItem: IItem;
 
@@ -391,6 +392,12 @@ describe("Items", () => {
       });
 
       manager = new User({
+        name: "Item manager",
+        email: "manager@mail.com",
+        password: "lol-password",
+      });
+
+      user = new User({
         name: "Item user",
         email: "user@mail.com",
         password: "lol-password",
@@ -412,10 +419,12 @@ describe("Items", () => {
       // register item to users
       owner.items.push(testItem._id);
       manager.items.push(testItem._id);
+      user.items.push(testItem._id);
       troublemaker.items.push(testItem._id);
 
       await owner.save();
       await manager.save();
+      await user.save();
       await troublemaker.save();
       await testItem.save();
     });
@@ -424,11 +433,12 @@ describe("Items", () => {
     afterAll(async () => {
       await owner.remove();
       await manager.remove();
+      await user.remove();
       await troublemaker.remove();
       await Item.deleteMany({});
     });
 
-    it("cannot unregister if item's owner", async () => {
+    it("will not unregister item's owner", async () => {
       // run a request that will be forbidden
       const response = await supertest(server.server)
         .post("/api/items/test-item/unregister")
@@ -445,7 +455,7 @@ describe("Items", () => {
       ).toBe(true);
     });
 
-    it("can unregister from item", async () => {
+    it("can unregister requestor from item", async () => {
       // run a request that will be work
       const response = await supertest(server.server)
         .post("/api/items/test-item/unregister")
@@ -468,20 +478,20 @@ describe("Items", () => {
       );
     });
 
-    it("cannot ban user if not item's manager", async () => {
+    it("will not ban user if not requested by item's manager", async () => {
       // run a request that will be forbidden
       const response = await supertest(server.server)
-        .post(`/api/items/test-item/ban/${owner._id.toHexString()}`)
+        .post(`/api/items/test-item/ban/${user._id.toHexString()}`)
         .set("Authorization", "Bearer " + troublemaker.createJWT())
         .trustLocalhost();
       expect(response.status).toBe(403);
 
-      // reload owner
-      owner = (await User.findById(owner._id.toHexString())) as IUser;
+      // reload user
+      user = (await User.findById(user._id.toHexString())) as IUser;
 
       // check he's still bound to item
       expect(
-        owner.items.some((itemId) => itemId.toHexString() == testItem._id)
+        user.items.some((itemId) => itemId.toHexString() == testItem._id)
       ).toBe(true);
     });
 
