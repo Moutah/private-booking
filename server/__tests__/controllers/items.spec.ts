@@ -374,9 +374,147 @@ describe("Items", () => {
     });
   });
 
+  // *** Invite
+
+  describe("invite", () => {
+    let owner: IUser;
+    let manager: IUser;
+    let user: IUser;
+    let otherUser: IUser;
+    let testItem: IItem;
+
+    // create objects
+    beforeAll(async () => {
+      owner = new User({
+        name: "Item's owner",
+        email: "owner@mail.com",
+        password: "lol-password",
+      });
+
+      manager = new User({
+        name: "Item manager",
+        email: "manager@mail.com",
+        password: "lol-password",
+      });
+
+      user = new User({
+        name: "Item user",
+        email: "user@mail.com",
+        password: "lol-password",
+      });
+
+      otherUser = new User({
+        name: "Item user",
+        email: "otherUser@mail.com",
+        password: "lol-password",
+      });
+
+      testItem = new Item({
+        name: "test item",
+        slug: "test-item",
+        owner: owner._id,
+        managers: [owner._id, manager._id],
+      });
+
+      // register item to users
+      owner.items.push(testItem._id);
+      manager.items.push(testItem._id);
+      user.items.push(testItem._id);
+
+      await owner.save();
+      await manager.save();
+      await user.save();
+      await otherUser.save();
+      await testItem.save();
+    });
+
+    // cleanup inserted items
+    afterAll(async () => {
+      await owner.remove();
+      await manager.remove();
+      await user.remove();
+      await otherUser.remove();
+      await Item.deleteMany({});
+    });
+
+    it("cannot be done by non-managers", async () => {
+      // run a request that will be forbidden
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/invite`)
+        .set("Authorization", "Bearer " + user.createJWT())
+        .send({ email: otherUser.email })
+        .trustLocalhost();
+      expect(response.status).toBe(403);
+
+      // reload otherUser
+      otherUser = (await User.findById(otherUser._id.toHexString())) as IUser;
+
+      // check he's not bound to item
+      expect(otherUser.hasAccessToItem(testItem._id)).toBe(false);
+    });
+
+    it("requires an email in the request", async () => {
+      // run a request that will be work
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/invite`)
+        .set("Authorization", "Bearer " + manager.createJWT())
+        .trustLocalhost();
+      expect(response.status).toBe(422);
+
+      // reload otherUser
+      otherUser = (await User.findById(otherUser._id.toHexString())) as IUser;
+
+      // check he's now bound to item
+      expect(otherUser.hasAccessToItem(testItem._id)).toBe(false);
+    });
+
+    it("can add item to user", async () => {
+      // run a request that will be work
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/invite`)
+        .set("Authorization", "Bearer " + manager.createJWT())
+        .send({ email: otherUser.email })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+
+      // reload models
+      otherUser = (await User.findById(otherUser._id.toHexString())) as IUser;
+      testItem = (await Item.findById(testItem._id.toHexString())) as IItem;
+
+      // check otherUser is now bound to item
+      expect(otherUser.hasAccessToItem(testItem._id)).toBe(true);
+
+      // check otherUser is not a manager of item
+      expect(testItem.hasManager(otherUser._id)).toBe(false);
+    });
+
+    it("can add user as item's manager", async () => {
+      // run a request that will be work
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/invite`)
+        .set("Authorization", "Bearer " + manager.createJWT())
+        .send({
+          email: otherUser.email,
+          asManager: true,
+        })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+
+      // reload testItem
+      testItem = (await Item.findById(testItem._id.toHexString())) as IItem;
+
+      // check he's now manager of item
+      expect(testItem.hasManager(otherUser._id)).toBe(true);
+    });
+
+    test.todo("creates user if necessary");
+
+    test.todo("notifies invited user by email");
+  });
+
   // *** Unregister
 
-  describe("Unregister", () => {
+  describe("unregister", () => {
     let owner: IUser;
     let manager: IUser;
     let user: IUser;

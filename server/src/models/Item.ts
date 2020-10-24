@@ -4,7 +4,6 @@ import { nextAvailableSlug } from "../helpers";
 import { NotFoundError } from "../errors";
 import { IInfo, InfoSchema } from "./Info";
 import { IPlace, PlaceSchema } from "./Place";
-import { IUser } from "./User";
 
 // schema
 const ItemSchema = new mongoose.Schema({
@@ -67,9 +66,16 @@ export interface IItem extends mongoose.Document {
 
   owner: ObjectId;
   managers: ObjectId[];
+
+  /**
+   * Returns `true` if given `userId` is a manager for this item. Returns
+   * `false` otherwise.
+   */
+  hasManager: (userId: ObjectId | string) => boolean;
 }
 
-// static methods
+// *** Static methods
+
 ItemSchema.statics.findBySlug = async function (slug: string): Promise<IItem> {
   const item = await this.findOne({ slug }).exec();
 
@@ -78,6 +84,12 @@ ItemSchema.statics.findBySlug = async function (slug: string): Promise<IItem> {
   }
 
   return item;
+};
+
+// *** Methods
+
+ItemSchema.methods.hasManager = function (userId: ObjectId | string): boolean {
+  return this.managers.some((managerId: ObjectId) => managerId.equals(userId));
 };
 
 // document middleware

@@ -15,11 +15,7 @@ const UserSchema = new mongoose.Schema({
     required: [true, "User email is required."],
     unique: true,
   },
-  password: {
-    type: String,
-    required: [true, "User password is required."],
-    select: false,
-  },
+  password: { type: String, select: false },
 
   isAdmin: { type: Boolean, default: false },
 
@@ -38,11 +34,25 @@ export interface IUser extends mongoose.Document {
 
   items: ObjectId[];
 
-  isPasswordValid: () => Promise<boolean>;
+  /**
+   * Check that given `password` matches the one stored for this user.
+   */
+  isPasswordValid: (password: string) => Promise<boolean>;
+
+  /**
+   * Creates a JWT for this user.
+   */
   createJWT: () => string;
+
+  /**
+   * Returns `true` if given `itemId` is accessible to this user. Returns
+   * `false` otherwise.
+   */
+  hasAccessToItem: (itemId: ObjectId | string) => boolean;
 }
 
-// methods
+// *** Methods
+
 UserSchema.methods.isPasswordValid = async function (
   password: string
 ): Promise<boolean> {
@@ -62,6 +72,12 @@ UserSchema.methods.createJWT = function (): string {
     process.env.APP_KEY as string,
     { expiresIn: TOKEN_LIFESPAN }
   );
+};
+
+UserSchema.methods.hasAccessToItem = function (
+  itemId: ObjectId | string
+): boolean {
+  return this.items.some((_itemId: ObjectId) => _itemId.equals(itemId));
 };
 
 // document middleware

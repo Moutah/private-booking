@@ -2,8 +2,9 @@ import Item, { IItem } from "../models/Item";
 import { NextFunction, Request, Response } from "express";
 import slugify from "slugify";
 import { storeUploadedFile } from "../middleware/store-image";
-import { IUser } from "../models/User";
+import User, { IUser } from "../models/User";
 import { ForbiddenError } from "../errors";
+import { usersRouter } from "../routes/models/users";
 
 /**
  * Returns all items.
@@ -115,7 +116,48 @@ export const invite = async (
   res: Response,
   next: NextFunction
 ) => {
-  res.json("invite");
+  try {
+    const requestorId = req.user?._id as string;
+    let userToInvite = await User.findOne({ email: req.body.email }).exec();
+    const item = req.item as IItem;
+    let shouldNotify = false;
+
+    // cannot invite if not item's manager
+    if (!item.hasManager(requestorId)) {
+      throw new ForbiddenError("Insufficient rights");
+    }
+
+    // create new user if not found
+    if (!userToInvite) {
+      userToInvite = new User({
+        name: "",
+        email: req.body.email,
+      });
+    }
+
+    // adds item to user
+    if (!userToInvite.hasAccessToItem(item._id)) {
+      userToInvite.items.push(item._id);
+      await userToInvite.save();
+      shouldNotify = true;
+    }
+
+    // adds user as item manager
+    if (req.body.asManager && !item.hasManager(userToInvite._id)) {
+      item.managers.push(userToInvite._id);
+      await item.save();
+      shouldNotify = true;
+    }
+
+    // notify user
+    if (shouldNotify) {
+      // todo
+    }
+
+    res.status(200).send();
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**

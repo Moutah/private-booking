@@ -24,6 +24,10 @@ itemsRouter.patch("/:slug", [
   handleImageUpload(),
   itemsController.update,
 ]);
+itemsRouter.post("/:slug/invite", [
+  loadItemBySlug("slug"),
+  itemsController.invite,
+]);
 itemsRouter.post("/:slug/unregister", [
   loadItemBySlug("slug"),
   loadMeAsTargetUser(),
