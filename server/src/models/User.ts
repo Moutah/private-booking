@@ -49,6 +49,11 @@ export interface IUser extends mongoose.Document {
    * `false` otherwise.
    */
   hasAccessToItem: (itemId: ObjectId | string) => boolean;
+
+  /**
+   * Sends a mail to this user to inform them of their new access.
+   */
+  notifyNewAccess: (itemId: ObjectId | string) => Promise<void>;
 }
 
 // *** Methods
@@ -78,6 +83,18 @@ UserSchema.methods.hasAccessToItem = function (
   itemId: ObjectId | string
 ): boolean {
   return this.items.some((_itemId: ObjectId) => _itemId.equals(itemId));
+};
+
+UserSchema.methods.notifyNewAccess = async function (
+  itemId: ObjectId | string
+): Promise<void> {
+  // unregistred user
+  if (!this.password) {
+    // welcome, please register
+    return;
+  }
+
+  // new access
 };
 
 // document middleware

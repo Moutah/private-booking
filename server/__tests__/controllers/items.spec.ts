@@ -454,12 +454,15 @@ describe("Items", () => {
     });
 
     it("requires an email in the request", async () => {
-      // run a request that will be work
+      // run a request that will work
       const response = await supertest(server.server)
         .post(`/api/items/test-item/invite`)
         .set("Authorization", "Bearer " + manager.createJWT())
         .trustLocalhost();
       expect(response.status).toBe(422);
+
+      // check user was not notified
+      // expect(otherUser.notifyNewAccess).not.toHaveBeenCalled();
 
       // reload otherUser
       otherUser = (await User.findById(otherUser._id.toHexString())) as IUser;
@@ -469,13 +472,16 @@ describe("Items", () => {
     });
 
     it("can add item to user", async () => {
-      // run a request that will be work
+      // run a request that will work
       const response = await supertest(server.server)
         .post(`/api/items/test-item/invite`)
         .set("Authorization", "Bearer " + manager.createJWT())
         .send({ email: otherUser.email })
         .trustLocalhost();
       expect(response.status).toBe(200);
+
+      // check user was notified
+      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
 
       // reload models
       otherUser = (await User.findById(otherUser._id.toHexString())) as IUser;
@@ -489,7 +495,7 @@ describe("Items", () => {
     });
 
     it("can add user as item's manager", async () => {
-      // run a request that will be work
+      // run a request that will work
       const response = await supertest(server.server)
         .post(`/api/items/test-item/invite`)
         .set("Authorization", "Bearer " + manager.createJWT())
@@ -500,6 +506,9 @@ describe("Items", () => {
         .trustLocalhost();
       expect(response.status).toBe(200);
 
+      // check user was notified
+      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
+
       // reload testItem
       testItem = (await Item.findById(testItem._id.toHexString())) as IItem;
 
@@ -507,7 +516,44 @@ describe("Items", () => {
       expect(testItem.hasManager(otherUser._id)).toBe(true);
     });
 
-    test.todo("creates user if necessary");
+    it("creates user if necessary", async () => {
+      const newEmail = "new.user@mail.com";
+
+      // run a request that will work
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/invite`)
+        .set("Authorization", "Bearer " + manager.createJWT())
+        .send({ email: newEmail })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+
+      // check user was notified
+      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
+
+      // load models
+      const newUser = await User.findOne({ email: newEmail }).exec();
+      testItem = (await Item.findById(testItem._id.toHexString())) as IItem;
+
+      // user was created
+      expect(newUser).toBeTruthy();
+      expect((newUser as IUser).hasAccessToItem(testItem._id)).toBe(true);
+
+      // cleanup
+      await newUser?.remove();
+    });
+
+    it("doesn't notify user if no changes", async () => {
+      // run a request that will work
+      const response = await supertest(server.server)
+        .post(`/api/items/test-item/invite`)
+        .set("Authorization", "Bearer " + manager.createJWT())
+        .send({ email: otherUser.email })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+
+      // check user was NOT notified
+      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
+    });
 
     test.todo("notifies invited user by email");
   });
@@ -594,7 +640,7 @@ describe("Items", () => {
     });
 
     it("can unregister requestor from item", async () => {
-      // run a request that will be work
+      // run a request that will work
       const response = await supertest(server.server)
         .post("/api/items/test-item/unregister")
         .set("Authorization", "Bearer " + manager.createJWT())

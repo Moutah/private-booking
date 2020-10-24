@@ -130,7 +130,7 @@ export const invite = async (
     // create new user if not found
     if (!userToInvite) {
       userToInvite = new User({
-        name: "",
+        name: "Unregistred user",
         email: req.body.email,
       });
     }
@@ -151,7 +151,7 @@ export const invite = async (
 
     // notify user
     if (shouldNotify) {
-      // todo
+      await userToInvite.notifyNewAccess(item._id);
     }
 
     res.status(200).send();
@@ -171,7 +171,7 @@ export const unregister = async (
   next: NextFunction
 ) => {
   try {
-    const requestorId = req.user?._id;
+    const requestorId = req.user?._id as string;
     const user = req.targetUser as IUser;
     const item = req.item as IItem;
 
@@ -181,10 +181,7 @@ export const unregister = async (
     }
 
     // cannot unregister other user if not item's manager
-    if (
-      user._id != requestorId &&
-      !item.managers.some((managerId) => managerId.toHexString() == requestorId)
-    ) {
+    if (user._id != requestorId && !item.hasManager(requestorId)) {
       throw new ForbiddenError("Insufficient rights");
     }
 
