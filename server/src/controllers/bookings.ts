@@ -1,6 +1,7 @@
 import Booking, { IBooking } from "../models/Booking";
 import { IItem } from "../models/Item";
 import { NextFunction, Request, Response } from "express";
+import { ForbiddenError } from "../errors";
 
 /**
  * Returns all bookings.
@@ -61,7 +62,14 @@ export const update = async (
   next: NextFunction
 ) => {
   try {
+    const requestorId = req.user?._id as string;
+    const item = req.item as IItem;
     let booking = req.booking as IBooking;
+
+    // only author and item manager can update
+    if (!booking.user.equals(requestorId) && !item.hasManager(requestorId)) {
+      throw new ForbiddenError("Insufficient rights");
+    }
 
     // update booking
     booking.status = req.body.status || booking.status;

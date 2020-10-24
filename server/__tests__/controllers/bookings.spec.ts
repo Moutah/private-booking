@@ -2,24 +2,34 @@ import supertest from "supertest";
 import * as server from "../../src/server";
 import Booking from "../../src/models/Booking";
 import Item from "../../src/models/Item";
+import User from "../../src/models/User";
 import {
   mockFindById,
   testNotFoundErrorHandling,
   testServerErrorHandling,
 } from "./utils";
+import { itemsRouter } from "../../src/routes/models/items";
 
 describe("Bookings", () => {
   let item = new Item({
     name: "base item bookings",
     slug: "base-item-bookings",
   });
+  const manager = new User({
+    name: "manager",
+    email: "manager@mail.com",
+    items: [item._id],
+  });
+  item.managers.push(manager._id);
   const baseUrl = `/api/items/${item.slug}`;
 
   beforeAll(async () => {
     await server.setup();
     await item.save();
+    await manager.save();
   });
   afterAll(async () => {
+    await manager.remove();
     await item.remove();
     await server.stop();
   });
@@ -135,15 +145,24 @@ describe("Bookings", () => {
   // *** Update
 
   describe("update", () => {
-    // create and cleanup a model we'll work with
+    let bookingAuthor = new User({
+      name: "user",
+      email: "user@mail.com",
+      items: [item._id],
+    });
     let testBooking = new Booking({
       date: new Date(),
       item: item._id,
+      user: bookingAuthor._id,
     });
+
+    // create and cleanup a model we'll work with
     beforeAll(async () => {
+      await bookingAuthor.save();
       await testBooking.save();
     });
     afterAll(async () => {
+      await bookingAuthor.remove();
       await Booking.deleteMany({});
     });
 
@@ -178,14 +197,13 @@ describe("Bookings", () => {
       )
     );
 
-    it("can update booking", async () => {
+    it("author can update booking", async () => {
       // run a request that will work
       const now = new Date();
       const response = await supertest(server.server)
         .patch(`${baseUrl}/bookings/${testBooking._id}`)
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .set("Authorization", "Bearer " + bookingAuthor.createJWT())
         .send({
-          status: "new value",
           comment: "new value",
           createdAt: now,
         })
@@ -201,25 +219,20 @@ describe("Bookings", () => {
       }
 
       // validate changes
-      expect(dbBooking.status).toBe("new value");
       expect(dbBooking.comment).toBe("new value");
 
       // validate field protection
       expect(dbBooking.createdAt).not.toBe(now.toJSON());
     });
 
-    it("can update booking with empty values", async () => {
-      // run a request that will work
-      const response = await supertest(server.server)
+    it("manager can update booking", async () => {
+      // run a request that will work but has no effect
+      const responseNoEffect = await supertest(server.server)
         .patch(`${baseUrl}/bookings/${testBooking._id}`)
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
-        .send({
-          status: "",
-          comment: "",
-        })
+        .set("Authorization", "Bearer " + manager.createJWT())
+        .send({ status: "new value" })
         .trustLocalhost();
-      expect(response.status).toBe(200);
-      expect(response.body).toStrictEqual({});
+      expect(responseNoEffect.status).toBe(200);
 
       // get booking from db
       const dbBooking = await Booking.findById(testBooking._id);
@@ -228,9 +241,38 @@ describe("Bookings", () => {
         throw new Error("Could not find test booking in database anymore");
       }
 
-      // validate changes
+      // validate status is protected
       expect(dbBooking.status).toBe("new value");
-      expect(dbBooking.comment).toBe("");
+    });
+
+    it("someone else cannot update booking", async () => {
+      const troublemaker = new User({
+        name: "troublemaker",
+        email: "troublemaker@mail.com",
+        items: [item._id],
+      });
+      await troublemaker.save();
+
+      // run a request that will work but has no effect
+      const responseNoEffect = await supertest(server.server)
+        .patch(`${baseUrl}/bookings/${testBooking._id}`)
+        .set("Authorization", "Bearer " + troublemaker.createJWT())
+        .send({ comment: "lulz h4ck3d" })
+        .trustLocalhost();
+      expect(responseNoEffect.status).toBe(403);
+
+      // get booking from db
+      let dbBooking = await Booking.findById(testBooking._id);
+
+      if (!dbBooking) {
+        throw new Error("Could not find test booking in database anymore");
+      }
+
+      // validate status is protected
+      expect(dbBooking.status).not.toBe("lulz h4ck3d");
+
+      // cleanup
+      await troublemaker.remove();
     });
   });
 
