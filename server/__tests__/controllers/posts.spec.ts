@@ -3,7 +3,11 @@ import supertest from "supertest";
 import * as server from "../../src/server";
 import Post from "../../src/models/Post";
 import Item from "../../src/models/Item";
-import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
+import {
+  mockFindById,
+  testNotFoundErrorHandling,
+  testServerErrorHandling,
+} from "./utils";
 
 describe("Posts", () => {
   let item = new Item({ name: "base item posts", slug: "base-item-posts" });
@@ -157,15 +161,11 @@ describe("Posts", () => {
     it("can handle server error", async () => {
       // hijack post.findById to have a server error on Post.save()
       const findByIdBackup = Post.findById;
-      Post.findById = jest.fn().mockResolvedValueOnce(
-        new Promise((resolve, reject) => {
-          resolve({
-            save: () => {
-              throw new Error("TEST server error");
-            },
-          });
-        })
-      );
+      Post.findById = mockFindById({
+        save: () => {
+          throw new Error("TEST server error");
+        },
+      });
 
       // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});
@@ -230,15 +230,11 @@ describe("Posts", () => {
     it("can handle server error", async () => {
       // hijack post.findById to have a server error on Post.save()
       const findByIdBackup = Post.findById;
-      Post.findById = jest.fn().mockResolvedValueOnce(
-        new Promise((resolve, reject) => {
-          resolve({
-            remove: () => {
-              throw new Error("TEST server error");
-            },
-          });
-        })
-      );
+      Post.findById = mockFindById({
+        remove: () => {
+          throw new Error("TEST server error");
+        },
+      });
 
       // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});

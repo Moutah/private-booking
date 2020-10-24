@@ -66,3 +66,13 @@ export const testNotFoundErrorHandling = (
   expect(response.status).toBe(404);
   expect(response.body).toBe("Not found");
 };
+
+/**
+ * Mock the mongoose document `findById()` method to make it return the given
+ * `modelMock` insted.
+ * Don't forget to backup and restore the original findById()` method!
+ */
+export const mockFindById = (modelMock: any) =>
+  jest.fn().mockReturnValue({
+    exec: () => new Promise((resolve, reject) => resolve(modelMock)),
+  });

@@ -2,7 +2,11 @@ import supertest from "supertest";
 import * as server from "../../src/server";
 import Booking from "../../src/models/Booking";
 import Item from "../../src/models/Item";
-import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
+import {
+  mockFindById,
+  testNotFoundErrorHandling,
+  testServerErrorHandling,
+} from "./utils";
 
 describe("Bookings", () => {
   let item = new Item({
@@ -146,15 +150,11 @@ describe("Bookings", () => {
     it("can handle server error", async () => {
       // hijack post.findById to have a server error on Booking.save()
       const findByIdBackup = Booking.findById;
-      Booking.findById = jest.fn().mockResolvedValueOnce(
-        new Promise((resolve, reject) => {
-          resolve({
-            save: () => {
-              throw new Error("TEST server error");
-            },
-          });
-        })
-      );
+      Booking.findById = mockFindById({
+        save: () => {
+          throw new Error("TEST server error");
+        },
+      });
 
       // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});
@@ -249,15 +249,11 @@ describe("Bookings", () => {
     it("can handle server error", async () => {
       // hijack post.findById to have a server error on Booking.save()
       const findByIdBackup = Booking.findById;
-      Booking.findById = jest.fn().mockResolvedValueOnce(
-        new Promise((resolve, reject) => {
-          resolve({
-            remove: () => {
-              throw new Error("TEST server error");
-            },
-          });
-        })
-      );
+      Booking.findById = mockFindById({
+        remove: () => {
+          throw new Error("TEST server error");
+        },
+      });
 
       // mute console
       jest.spyOn(console, "error").mockImplementationOnce(() => {});

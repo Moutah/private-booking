@@ -1,8 +1,7 @@
 import supertest from "supertest";
 import * as server from "../../src/server";
-import jsonwebtoken from "jsonwebtoken";
 import User, { IUser } from "../../src/models/User";
-import { testNotFoundErrorHandling } from "./utils";
+import { mockFindById } from "./utils";
 
 let adminUser: IUser;
 let alice: IUser;
@@ -114,16 +113,11 @@ describe("Users", () => {
     it("can handle server error", async () => {
       // hijack user.findById to have a server error on User.save()
       const findByIdBackup = User.findById;
-      User.findById = jest.fn().mockReturnValue({
-        exec: () =>
-          new Promise((resolve, reject) =>
-            resolve({
-              isAdmin: true,
-              save: () => {
-                throw new Error("TEST server error");
-              },
-            })
-          ),
+      User.findById = mockFindById({
+        isAdmin: true,
+        save: () => {
+          throw new Error("TEST server error");
+        },
       });
 
       // mute console
