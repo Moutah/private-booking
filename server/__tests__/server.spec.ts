@@ -44,7 +44,9 @@ describe("Server", () => {
   });
 
   it("can be verbose", async () => {
-    const consoleLogSpy = jest.spyOn(console, "log");
+    const consoleLogSpy = jest
+      .spyOn(console, "log")
+      .mockImplementation(() => {});
 
     // start and stop server
     await server.start(1234);
@@ -62,6 +64,9 @@ describe("Server", () => {
 
     // verbose
     expect(consoleLogSpy).toHaveBeenCalled();
+
+    // restore console
+    consoleLogSpy.mockRestore();
 
     // restore node env
     process.env.NODE_ENV = "test";
