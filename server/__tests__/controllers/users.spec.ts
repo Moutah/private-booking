@@ -1,3 +1,4 @@
+import fs from "fs";
 import supertest from "supertest";
 import * as server from "../../src/server";
 import User, { IUser } from "../../src/models/User";
@@ -106,6 +107,9 @@ describe("Users", () => {
       expect(bob.profileImage).toBe(
         `/images/users/${bob._id.toHexString()}.jpg`
       );
+
+      // cleanup
+      fs.rmdirSync(`../storage/users`, { recursive: true });
     });
   });
 

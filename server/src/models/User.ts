@@ -38,7 +38,7 @@ export interface IUser extends mongoose.Document {
   /**
    * Check that given `password` matches the one stored for this user.
    */
-  isPasswordValid: (password: string) => Promise<boolean>;
+  verifyPassword: (password: string) => Promise<boolean>;
 
   /**
    * Creates a JWT for this user.
@@ -59,7 +59,7 @@ export interface IUser extends mongoose.Document {
 
 // *** Methods
 
-UserSchema.methods.isPasswordValid = async function (
+UserSchema.methods.verifyPassword = async function (
   password: string
 ): Promise<boolean> {
   return await bcrypt.compare(password, this.password);

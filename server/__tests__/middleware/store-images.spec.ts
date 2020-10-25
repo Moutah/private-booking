@@ -4,7 +4,7 @@ import express, { Express } from "express";
 import bodyParser from "body-parser";
 import { NextFunction, Request, Response } from "express";
 import * as storeImage from "../../src/middleware/store-image";
-import { handleError } from "../../src/middleware/error";
+import { handleErrorJson } from "../../src/middleware/error";
 import supertest from "supertest";
 import fileUpload from "express-fileupload";
 
@@ -34,7 +34,7 @@ const makeTestServer = () => {
       createParentPath: true,
     })
   );
-  app.use(handleError);
+  app.use(handleErrorJson);
 
   app.post("/", [
     // hijack req files mv function with fileMvMock if set

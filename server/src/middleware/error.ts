@@ -1,7 +1,11 @@
 import * as mongoose from "mongoose";
 import { NextFunction, Request, Response } from "express";
 
-export const handleError = (
+/**
+ * Handles known type of errors and returns the relevant JSON response as well
+ * as HTTP status code.
+ */
+export const handleErrorJson = (
   err: Error,
   req: Request,
   res: Response,
@@ -27,6 +31,27 @@ export const handleError = (
       res.status(404).json("Not found");
       break;
 
+    // unhandled error
+    default:
+      console.error(err);
+      res.status(500).json("Something went wrong :(");
+      break;
+  }
+
+  return next();
+};
+
+/**
+ * Handles known type of errors and returns the relevant web page as well as
+ * HTTP status code.
+ */
+export const handleErrorWeb = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  switch (err.name) {
     // unhandled error
     default:
       console.error(err);

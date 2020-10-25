@@ -1,5 +1,7 @@
 import passport from "passport";
-import { Strategy, ExtractJwt } from "passport-jwt";
+import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import { Strategy as LocalStrategy } from "passport-local";
+import User from "./models/User";
 
 /**
  * Token validity duration in seconds.
@@ -19,7 +21,7 @@ export const setupPassportJWTStrategy = () => {
 
   passport.use(
     "jwt",
-    new Strategy(
+    new JwtStrategy(
       {
         secretOrKey: process.env.APP_KEY,
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -28,5 +30,30 @@ export const setupPassportJWTStrategy = () => {
         return done(null, { _id: token.sub });
       }
     )
+  );
+
+  passport.use(
+    "local",
+    new LocalStrategy((username, password, done) => {
+      User.findOne({ username: username }, (err, user) => {
+        // db error
+        if (err) {
+          return done(err);
+        }
+
+        // no user found
+        if (!user) {
+          return done(null, false);
+        }
+
+        // incorrect password
+        if (!user.verifyPassword(password)) {
+          return done(null, false);
+        }
+
+        // user found
+        return done(null, user);
+      });
+    })
   );
 };

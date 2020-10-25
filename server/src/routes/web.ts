@@ -1,6 +1,7 @@
-import express from "express";
-import * as authController from "../controllers/auth";
+import express, { Request, Response } from "express";
+import passport from "passport";
 import * as pagesController from "../controllers/pages";
+import { handleErrorWeb } from "../middleware/error";
 
 export const webRoutes = () => {
   // create router
@@ -9,9 +10,16 @@ export const webRoutes = () => {
   });
 
   // bind routes
-  routes.get("/", pagesController.main);
-  routes.get("/login", authController.login);
-  routes.get("/logout", authController.logout);
+  routes.get("/register", pagesController.register);
+  routes.get("/login", pagesController.login);
+  routes.post("/login", [
+    passport.authenticate("local", { failureRedirect: "/login" }),
+    (req: Request, res: Response) => res.redirect("/"),
+  ]);
+  routes.get("*", [
+    passport.authenticate("local", { failureRedirect: "/login" }),
+    pagesController.main,
+  ]);
 
   // client static assets
   if (process.env.CLIENT_BUILD_PATH) {
@@ -22,6 +30,9 @@ export const webRoutes = () => {
   if (process.env.STORAGE_PATH) {
     routes.use("/images", express.static(process.env.STORAGE_PATH));
   }
+
+  // error handling middleware
+  routes.use(handleErrorWeb);
 
   return routes;
 };

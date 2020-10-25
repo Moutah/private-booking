@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import passport from "passport";
 import { generateNewToken } from "../controllers/auth";
-import { handleError } from "../middleware/error";
+import { handleErrorJson } from "../middleware/error";
 import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
@@ -31,7 +31,7 @@ export const apiRoutes = () => {
   routes.get("/new-token", generateNewToken);
 
   // error handling middleware
-  routes.use(handleError);
+  routes.use(handleErrorJson);
 
   return routes;
 };
