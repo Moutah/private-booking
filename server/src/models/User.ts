@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import jsonwebtoken from "jsonwebtoken";
 import { TOKEN_LIFESPAN } from "../auth";
+import { sendMailCallToAction } from "../services/mail";
 
 // schema
 const UserSchema = new mongoose.Schema({
@@ -86,15 +87,28 @@ UserSchema.methods.hasAccessToItem = function (
 };
 
 UserSchema.methods.notifyNewAccess = async function (
-  itemId: ObjectId | string
+  itemName: string
 ): Promise<void> {
   // unregistred user
   if (!this.password) {
-    // welcome, please register
+    await sendMailCallToAction(
+      this.email,
+      "You've been invited to join Private Booking!",
+      `<p>Hello,<br>You've been invited to join us</p>`,
+      `Register`,
+      `https://register`
+    );
     return;
   }
 
   // new access
+  await sendMailCallToAction(
+    this.email,
+    `You've been invited to join ${itemName}!`,
+    `<p>Hello,<br>You've been invited to join us</p>`,
+    `View ${itemName}`,
+    `https://item`
+  );
 };
 
 // document middleware

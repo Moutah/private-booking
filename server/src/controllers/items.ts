@@ -151,7 +151,7 @@ export const invite = async (
 
     // notify user
     if (shouldNotify) {
-      await userToInvite.notifyNewAccess(item._id);
+      await userToInvite.notifyNewAccess(item.name);
     }
 
     res.status(200).send();

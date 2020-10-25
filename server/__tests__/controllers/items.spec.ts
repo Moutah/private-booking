@@ -4,6 +4,13 @@ import * as server from "../../src/server";
 import Item, { IItem } from "../../src/models/Item";
 import { testNotFoundErrorHandling, testServerErrorHandling } from "./utils";
 import User, { IUser } from "../../src/models/User";
+import { transport } from "../../src/services/mail";
+
+jest.mock("nodemailer", () => ({
+  createTransport: () => ({
+    sendMail: jest.fn(),
+  }),
+}));
 
 describe("Items", () => {
   beforeAll(server.setup);
@@ -481,7 +488,7 @@ describe("Items", () => {
       expect(response.status).toBe(200);
 
       // check user was notified
-      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
+      expect(transport.sendMail).toHaveBeenCalled();
 
       // reload models
       otherUser = (await User.findById(otherUser._id.toHexString())) as IUser;
@@ -507,7 +514,7 @@ describe("Items", () => {
       expect(response.status).toBe(200);
 
       // check user was notified
-      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
+      expect(transport.sendMail).toHaveBeenCalled();
 
       // reload testItem
       testItem = (await Item.findById(testItem._id.toHexString())) as IItem;
@@ -528,7 +535,7 @@ describe("Items", () => {
       expect(response.status).toBe(200);
 
       // check user was notified
-      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
+      expect(transport.sendMail).toHaveBeenCalled();
 
       // load models
       const newUser = await User.findOne({ email: newEmail }).exec();
@@ -552,10 +559,8 @@ describe("Items", () => {
       expect(response.status).toBe(200);
 
       // check user was NOT notified
-      // expect(otherUser.notifyNewAccess).toHaveBeenCalled();
+      expect(transport.sendMail).not.toHaveBeenCalled();
     });
-
-    test.todo("notifies invited user by email");
   });
 
   // *** Unregister

@@ -14,6 +14,7 @@ import "./models/Post";
 import "./models/User";
 import fileUpload from "express-fileupload";
 import { setupPassportJWTStrategy } from "./auth";
+import { setupMailer } from "./services/mail";
 
 export const app = express();
 export let server: Server;
@@ -45,6 +46,9 @@ export const setup = async () => {
 
   // setup auth guard
   setupPassportJWTStrategy();
+
+  // setup services
+  setupMailer();
 
   // register routes
   app.use(webRoutes());
