@@ -48,7 +48,7 @@ export const setupPassportLocalStrategy = () => {
       (username, password, done) => {
         User.findOne({ email: username })
           .select("password")
-          .exec((err, user) => {
+          .exec(async (err, user) => {
             // db error
             if (err) {
               return done(err);
@@ -60,7 +60,7 @@ export const setupPassportLocalStrategy = () => {
             }
 
             // incorrect password
-            if (!user.verifyPassword(password)) {
+            if (!(await user.verifyPassword(password))) {
               return done(null, false);
             }
 

@@ -1,6 +1,5 @@
 import supertest from "supertest";
 import * as server from "../../src/server";
-import jsonwebtoken from "jsonwebtoken";
 import User from "../../src/models/User";
 import { TOKEN_LIFESPAN } from "../../src/auth";
 
@@ -8,54 +7,48 @@ describe("Auth", () => {
   beforeAll(server.setup);
   afterAll(server.stop);
 
-  it("sets TOKEN_LIFESPAN to 1h by default", async () => {
-    expect.assertions(1);
+  describe("Logout", () => {
+    const user = new User({
+      name: "test user",
+      email: "test.user@mail.com",
+      password: "p@ssw0rd",
+    });
+    let authenticatedCookie: any;
 
-    // manually clear env
-    const tokenLifespanBackup = process.env.TOKEN_LIFESPAN;
-    delete process.env.TOKEN_LIFESPAN;
+    beforeAll(async () => {
+      await user.save();
+    });
+    afterAll(async () => {
+      await user.remove();
+    });
 
-    // restart server
-    await server.stop();
-    await server.setup();
+    it("can log user out", async () => {
+      // run login
+      const responseLogin = await supertest(server.server)
+        .post("/login")
+        .send({
+          email: user.email,
+          password: "p@ssw0rd",
+        })
+        .trustLocalhost();
+      authenticatedCookie = responseLogin.headers["set-cookie"];
 
-    // test default value
-    expect(TOKEN_LIFESPAN).toBe(60 * 60);
+      // logout
+      const responseLogout = await supertest(server.server)
+        .get("/logout")
+        .set("Cookie", authenticatedCookie)
+        .trustLocalhost();
+      expect(responseLogout.status).toBe(302);
+      expect(responseLogout.headers.location).toBe("/login");
 
-    // restore env
-    process.env.TOKEN_LIFESPAN = tokenLifespanBackup;
-  });
-
-  it("aborts request with 401 if no JWT provided", async () => {
-    const response = await supertest(server.server)
-      .get(`/api/ping`)
-      .trustLocalhost();
-    expect(response.status).toBe(401);
-  });
-
-  it("aborts request with 401 if JWT expired", async () => {
-    const expiredToken = jsonwebtoken.sign(
-      {
-        sub: "000000000000000000000000",
-        name: "test token",
-        exp: 1, // Epoch
-      },
-      process.env.APP_KEY as string
-    );
-
-    const response = await supertest(server.server)
-      .get(`/api/ping`)
-      .set("Authorization", "Bearer " + expiredToken)
-      .trustLocalhost();
-    expect(response.status).toBe(401);
-  });
-
-  it("allows request if valid JWT provided", async () => {
-    const response = await supertest(server.server)
-      .get(`/api/ping`)
-      .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
-      .trustLocalhost();
-    expect(response.status).toBe(200);
+      // check user has no access anymore
+      const responseAfterLogout = await supertest(server.server)
+        .get("/")
+        .set("Cookie", authenticatedCookie)
+        .trustLocalhost();
+      expect(responseAfterLogout.status).toBe(302);
+      expect(responseAfterLogout.headers.location).toBe("/login");
+    });
   });
 
   describe("Token generator", () => {
