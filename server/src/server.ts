@@ -13,8 +13,10 @@ import "./models/Item";
 import "./models/Post";
 import "./models/User";
 import fileUpload from "express-fileupload";
-import { setupPassportJWTStrategy } from "./auth";
+import { setupPassportJWTStrategy, setupPassportLocalStrategy } from "./auth";
 import { setupMailer } from "./services/mail";
+import passport from "passport";
+import session from "express-session";
 
 export const app = express();
 export let server: Server;
@@ -32,6 +34,15 @@ export const setup = async () => {
   // make the app
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
+
+  app.use(
+    session({
+      secret: process.env.APP_KEY as string,
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: true },
+    })
+  );
   app.use(helmet());
   app.use(compression());
   app.use(
@@ -46,13 +57,16 @@ export const setup = async () => {
 
   // setup auth guard
   setupPassportJWTStrategy();
+  setupPassportLocalStrategy();
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // setup services
   setupMailer();
 
   // register routes
-  app.use(webRoutes());
   app.use("/api", apiRoutes());
+  app.use(webRoutes());
 
   // set server
   server = https.createServer(httpsOptions, app);

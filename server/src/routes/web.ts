@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import passport from "passport";
 import * as pagesController from "../controllers/pages";
 import { handleErrorWeb } from "../middleware/error";
+import { ensureLoggedIn } from "connect-ensure-login";
 
 export const webRoutes = () => {
   // create router
@@ -12,14 +13,20 @@ export const webRoutes = () => {
   // bind routes
   routes.get("/register", pagesController.register);
   routes.get("/login", pagesController.login);
-  routes.post("/login", [
-    passport.authenticate("local", { failureRedirect: "/login" }),
-    (req: Request, res: Response) => res.redirect("/"),
-  ]);
-  routes.get("*", [
-    passport.authenticate("local", { failureRedirect: "/login" }),
-    pagesController.main,
-  ]);
+  routes.post(
+    "/login",
+    passport.authenticate("local", {
+      failureRedirect: "/login",
+      successRedirect: "/",
+    })
+  );
+  routes.get("/", [ensureLoggedIn("/login"), pagesController.main]);
+  routes.get("*", (req: Request, res: Response) => {
+    // request still unhandled
+    if (!res.writableEnded) {
+      res.redirect("/");
+    }
+  });
 
   // client static assets
   if (process.env.CLIENT_BUILD_PATH) {

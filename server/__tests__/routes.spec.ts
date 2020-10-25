@@ -6,6 +6,7 @@ jest.mock("express", () => {
   return {
     Router: () => ({
       get: jest.fn(),
+      post: jest.fn(),
       use: jest.fn(),
     }),
     static: jest.fn((path: string) => path),
