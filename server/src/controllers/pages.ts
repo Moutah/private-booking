@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { NextFunction, Request, Response } from "express";
+import { IUser } from "../models/User";
 
 /**
  * Route handler factory that returns the content of given
@@ -48,7 +49,15 @@ const getFileContent = async (
 export const main = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const fileContent = await getFileContent("index.html");
-    res.send(fileContent);
+
+    // inject user's JWT
+    const jwt = (req.user as IUser).createJWT();
+    const output = fileContent.replace(
+      "</head>",
+      `<meta name="token" value="${jwt}"></head>`
+    );
+
+    res.send(output);
   } catch (err) {
     next(err);
   }

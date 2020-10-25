@@ -26,7 +26,7 @@ console.log(`
 
   ***********************************************
   *                                             *
-  *  API SERVER                                 *
+  *  SERVER                                     *
   *                                             *
   *  Start time: ${new Date().toISOString()}       *
   *  User: ${USER.padEnd(32, " ")}     *

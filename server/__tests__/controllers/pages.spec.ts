@@ -5,6 +5,11 @@ import path from "path";
 import fs from "fs";
 
 // express mocks
+const mockRequest: any = {
+  user: {
+    createJWT: jest.fn(() => "user-jwt-token"),
+  },
+};
 const mockResponse: any = {
   send: jest.fn(),
 };
@@ -34,9 +39,13 @@ const getClientDistFileContent = async (
   });
 
 describe("Pages", () => {
-  it("can display main page", async () => {
-    const indexContent = await getClientDistFileContent("index.html");
-    await pagesController.main({} as Request, mockResponse, mockNext);
+  it("injects user's JWT on main page and displays it", async () => {
+    const indexContent = (await getClientDistFileContent("index.html")).replace(
+      "</head>",
+      `<meta name="token" value="user-jwt-token"></head>`
+    );
+    await pagesController.main(mockRequest, mockResponse, mockNext);
+    expect(mockRequest.user.createJWT).toHaveBeenCalled();
     expect(mockResponse.send).toHaveBeenCalledWith(indexContent);
   });
 
