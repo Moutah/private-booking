@@ -3,44 +3,16 @@ import fs from "fs";
 import { NextFunction, Request, Response } from "express";
 
 /**
- * Return the client build entry page.
+ * Route handler factory that returns the content of given
+ * `pathRelativeToClientBuild` as response.
  */
-export const main = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const fileContent = await getFileContent("index.html");
-    res.send(fileContent);
-  } catch (err) {
-    next(err);
-  }
-};
-
-/**
- * Return the login page.
- */
-export const login = async (
+const returnFile = (pathRelativeToClientBuild: string) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const fileContent = await getFileContent("login.html");
-    res.send(fileContent);
-  } catch (err) {
-    next(err);
-  }
-};
-
-/**
- * Return the register page.
- */
-export const register = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    console.log("register");
-    const fileContent = await getFileContent("register.html");
+    const fileContent = await getFileContent(pathRelativeToClientBuild);
     res.send(fileContent);
   } catch (err) {
     next(err);
@@ -69,3 +41,25 @@ const getFileContent = async (
       resolve(data);
     });
   });
+
+/**
+ * Return the client build entry page.
+ */
+export const main = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const fileContent = await getFileContent("index.html");
+    res.send(fileContent);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Return the login page.
+ */
+export const login = returnFile("login.html");
+
+/**
+ * Return the register page.
+ */
+export const register = returnFile("register.html");
