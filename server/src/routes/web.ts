@@ -18,12 +18,12 @@ export const webRoutes = () => {
   routes.get("/", [ensureLoggedIn("/login"), pagesController.main]);
 
   // fallback route
-  routes.get("*", (req: Request, res: Response) => {
-    // request still unhandled
-    if (!res.writableEnded) {
-      res.redirect("/");
-    }
-  });
+  // routes.get("*", (req: Request, res: Response) => {
+  //   // request still unhandled
+  //   if (!res.writableEnded) {
+  //     res.redirect("/");
+  //   }
+  // });
 
   // client static assets
   if (process.env.CLIENT_BUILD_PATH) {
