@@ -11,7 +11,7 @@ export const webRoutes = () => {
   });
 
   // bind routes
-  routes.get("/register", pagesController.register);
+  // routes.get("/register", pagesController.register);
   routes.get("/login", pagesController.login);
   routes.post("/login", authController.login);
   routes.get("/logout", authController.logout);
@@ -26,13 +26,22 @@ export const webRoutes = () => {
   // });
 
   // client static assets
-  if (process.env.CLIENT_BUILD_PATH) {
-    routes.use(express.static(process.env.CLIENT_BUILD_PATH));
+  if (process.env.CLIENT_PUBLIC_BUILD_PATH) {
+    routes.use("/login", express.static(process.env.CLIENT_PUBLIC_BUILD_PATH));
+  }
+  if (process.env.CLIENT_SECURE_BUILD_PATH) {
+    routes.use("/", [
+      ensureLoggedIn("/login"),
+      express.static(process.env.CLIENT_SECURE_BUILD_PATH),
+    ]);
   }
 
   // storage assets
   if (process.env.STORAGE_PATH) {
-    routes.use("/images", express.static(process.env.STORAGE_PATH));
+    routes.use("/images", [
+      ensureLoggedIn("/login"),
+      express.static(process.env.STORAGE_PATH),
+    ]);
   }
 
   // error handling middleware

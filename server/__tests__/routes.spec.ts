@@ -20,29 +20,46 @@ describe("Routes", () => {
       const routes = webRoutes();
 
       expect(express.static).toHaveBeenCalledWith(
-        process.env.CLIENT_BUILD_PATH
+        process.env.CLIENT_PUBLIC_BUILD_PATH
       );
-      expect(routes.use).toHaveBeenCalledWith(process.env.CLIENT_BUILD_PATH);
-      expect(express.static).toHaveBeenCalledWith(process.env.STORAGE_PATH);
       expect(routes.use).toHaveBeenCalledWith(
-        "/images",
-        process.env.STORAGE_PATH
+        "/login",
+        process.env.CLIENT_PUBLIC_BUILD_PATH
       );
+      expect(express.static).toHaveBeenCalledWith(
+        process.env.CLIENT_SECURE_BUILD_PATH
+      );
+      expect(routes.use).toHaveBeenCalledWith("/", [
+        expect.anything(),
+        process.env.CLIENT_SECURE_BUILD_PATH,
+      ]);
+      expect(express.static).toHaveBeenCalledWith(process.env.STORAGE_PATH);
+      expect(routes.use).toHaveBeenCalledWith("/images", [
+        expect.anything(),
+        process.env.STORAGE_PATH,
+      ]);
     });
 
     it("doesn't use express.static if assets paths not set in env", () => {
       // manually unset env
-      delete process.env.CLIENT_BUILD_PATH;
+      delete process.env.CLIENT_PUBLIC_BUILD_PATH;
+      delete process.env.CLIENT_SECURE_BUILD_PATH;
       delete process.env.STORAGE_PATH;
 
       // call web routes consturctor
       const routes = webRoutes();
 
       expect(express.static).not.toHaveBeenCalledWith(
-        process.env.CLIENT_BUILD_PATH
+        process.env.CLIENT_PUBLIC_BUILD_PATH
       );
       expect(routes.use).not.toHaveBeenCalledWith(
-        process.env.CLIENT_BUILD_PATH
+        process.env.CLIENT_PUBLIC_BUILD_PATH
+      );
+      expect(express.static).not.toHaveBeenCalledWith(
+        process.env.CLIENT_SECURE_BUILD_PATH
+      );
+      expect(routes.use).not.toHaveBeenCalledWith(
+        process.env.CLIENT_SECURE_BUILD_PATH
       );
       expect(express.static).not.toHaveBeenCalledWith(process.env.STORAGE_PATH);
       expect(routes.use).not.toHaveBeenCalledWith(

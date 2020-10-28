@@ -1,19 +1,22 @@
 import path from "path";
 import fs from "fs";
 import { NextFunction, Request, Response } from "express";
-import { IUser } from "../models/User";
 
 /**
  * Route handler factory that returns the content of given
  * `pathRelativeToClientBuild` as response.
  */
-const returnFile = (pathRelativeToClientBuild: string) => async (
+const returnFile = (clientBuild: string, filePath: string) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const fileContent = await getFileContent(pathRelativeToClientBuild);
+    const buildDir =
+      clientBuild === "secure"
+        ? process.env.CLIENT_SECURE_BUILD_PATH
+        : process.env.CLIENT_PUBLIC_BUILD_PATH;
+    const fileContent = await getFileContent(`${buildDir}/${filePath}`);
     res.send(fileContent);
   } catch (err) {
     next(err);
@@ -26,15 +29,11 @@ const returnFile = (pathRelativeToClientBuild: string) => async (
  * @param {Response} res
  * @returns {Promise<string>}
  */
-const getFileContent = async (
-  pathRelativeToClientBuild: string
-): Promise<string> =>
+const getFileContent = async (filePath: string): Promise<string> =>
   new Promise((resolve, reject) => {
-    const filePath = path.resolve(
-      `${process.env.CLIENT_BUILD_PATH}/${pathRelativeToClientBuild}`
-    );
+    const fileFullPath = path.resolve(filePath);
 
-    fs.readFile(filePath, "utf8", (err, data) => {
+    fs.readFile(fileFullPath, "utf8", (err, data) => {
       if (err) {
         return reject(err);
       }
@@ -46,29 +45,9 @@ const getFileContent = async (
 /**
  * Return the client build entry page.
  */
-export const main = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const fileContent = await getFileContent("index.html");
-
-    // inject user's JWT
-    const jwt = (req.user as IUser).createJWT();
-    const output = fileContent.replace(
-      "</head>",
-      `<meta name="token" value="${jwt}"></head>`
-    );
-
-    res.send(output);
-  } catch (err) {
-    next(err);
-  }
-};
+export const main = returnFile("secure", "index.html");
 
 /**
  * Return the login page.
  */
-export const login = returnFile("login.html");
-
-/**
- * Return the register page.
- */
-export const register = returnFile("register.html");
+export const login = returnFile("public", "index.html");
