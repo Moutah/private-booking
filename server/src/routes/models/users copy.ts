@@ -7,22 +7,18 @@ import {
 } from "../../middleware/models";
 import { handleImageUpload } from "../../middleware/store-image";
 
-// create routers
-export const meRouter = express.Router({
-  mergeParams: true,
-});
+// create router
 export const usersRouter = express.Router({
   mergeParams: true,
 });
 
-meRouter.get("/", [loadMeAsTargetUser(), usersController.me]);
-meRouter.patch("/", [
+usersRouter.get("/me", [loadMeAsTargetUser(), usersController.me]);
+usersRouter.patch("/me", [
   loadMeAsTargetUser(),
   handleImageUpload(),
   usersController.update,
 ]);
-
-usersRouter.patch("/:userId", [
+usersRouter.patch("/users/:userId", [
   verifyUserIsAdmin(),
   loadTargetUserById("userId"),
   usersController.update,

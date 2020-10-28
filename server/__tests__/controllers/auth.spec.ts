@@ -4,24 +4,23 @@ import User from "../../src/models/User";
 import { TOKEN_LIFESPAN } from "../../src/auth";
 
 describe("Auth", () => {
-  beforeAll(server.setup);
-  afterAll(server.stop);
+  const user = new User({
+    name: "test user",
+    email: "test.user@mail.com",
+    password: "p@ssw0rd",
+  });
+  let authenticatedCookie: any;
+
+  beforeAll(async () => {
+    server.setup();
+    await user.save();
+  });
+  afterAll(async () => {
+    await user.remove();
+    server.stop();
+  });
 
   describe("Logout", () => {
-    const user = new User({
-      name: "test user",
-      email: "test.user@mail.com",
-      password: "p@ssw0rd",
-    });
-    let authenticatedCookie: any;
-
-    beforeAll(async () => {
-      await user.save();
-    });
-    afterAll(async () => {
-      await user.remove();
-    });
-
     it("can log user out", async () => {
       // run login
       const responseLogin = await supertest(server.server)
@@ -52,39 +51,29 @@ describe("Auth", () => {
   });
 
   describe("Token generator", () => {
-    it("fails if req.user does not link to a known user", async () => {
-      // mute console
-      jest.spyOn(console, "error").mockImplementationOnce(() => {});
-
+    it("fails if invalid credentials are sent", async () => {
       const response = await supertest(server.server)
-        .get(`/api/new-token`)
-        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .post(`/api/login`)
+        .send({
+          email: user.email,
+          password: "le bad password",
+        })
         .trustLocalhost();
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(401);
     });
 
     it("can given a new token", async () => {
-      // create test user
-      const user = new User({
-        name: "test user",
-        email: "test@mail.com",
-        password: "lol-password",
-      });
-      await user.save();
-
       // get valid JWT for this user
-      const jwt = user.createJWT();
-
       const response = await supertest(server.server)
-        .get(`/api/new-token`)
-        .set("Authorization", "Bearer " + jwt)
+        .post(`/api/login`)
+        .send({
+          email: user.email,
+          password: "p@ssw0rd",
+        })
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body.token).toBeTruthy();
       expect(response.body.expiresIn).toBe(TOKEN_LIFESPAN - 1);
-
-      // remove test user
-      await user.remove();
     });
   });
 });

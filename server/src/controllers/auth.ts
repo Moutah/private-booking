@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { TOKEN_LIFESPAN } from "../auth";
-import User from "../models/User";
+import { IUser } from "../models/User";
 import passport from "passport";
 
 /**
@@ -11,17 +11,8 @@ export const generateNewToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  // get user
-  const user = await User.findById(req.user?._id).exec();
-
-  // not found
-  if (!user) {
-    next(new Error("User not found"));
-    return;
-  }
-
   // create and returns a new JWT
-  const token = user.createJWT();
+  const token = (req.user as IUser).createJWT();
   res.json({ token, expiresIn: TOKEN_LIFESPAN - 1 });
 };
 

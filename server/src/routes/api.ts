@@ -1,3 +1,4 @@
+import { ensureLoggedIn } from "connect-ensure-login";
 import express, { Request, Response } from "express";
 import passport from "passport";
 import { generateNewToken } from "../controllers/auth";
@@ -5,30 +6,51 @@ import { handleErrorJson } from "../middleware/error";
 import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
-import { usersRouter } from "./models/users";
+import { meRouter, usersRouter } from "./models/users";
 
-export const apiRoutes = () => {
+const jwtRoutes = () => {
   // create router
-  const routes = express.Router({
+  const routesJWT = express.Router({
     strict: true,
   });
 
-  // protect all routes with JWT guard
-  routes.use(passport.authenticate("jwt", { session: false }));
+  // protect routes with JWT guard
+  routesJWT.use(passport.authenticate("jwt", { session: false }));
 
   // ping pong
-  routes.get("/ping", (req: Request, res: Response) => {
+  routesJWT.get("/ping", (req: Request, res: Response) => {
     res.json("pong");
   });
 
   // bind routers
-  routes.use("/items", itemsRouter);
-  routes.use("/items/:itemSlug/posts", postsRouter);
-  routes.use("/items/:itemSlug/bookings", bookingsRouter);
-  routes.use("/", usersRouter);
+  routesJWT.use("/items", itemsRouter);
+  routesJWT.use("/items/:itemSlug/posts", postsRouter);
+  routesJWT.use("/items/:itemSlug/bookings", bookingsRouter);
+  routesJWT.use("/me", meRouter);
+  routesJWT.use("/users", usersRouter);
+
+  return routesJWT;
+};
+
+const loginRoutes = () => {
+  // create router
+  const routesLogin = express.Router({
+    strict: true,
+  });
 
   // bind routes
-  routes.get("/new-token", generateNewToken);
+  routesLogin.post("/login", [
+    passport.authenticate("local"),
+    generateNewToken,
+  ]);
+
+  return routesLogin;
+};
+
+export const apiRoutes = () => {
+  const routes = express.Router({ strict: true });
+  routes.use(loginRoutes());
+  routes.use(jwtRoutes());
 
   // error handling middleware
   routes.use(handleErrorJson);
