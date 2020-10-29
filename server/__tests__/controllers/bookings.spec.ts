@@ -8,7 +8,6 @@ import {
   testNotFoundErrorHandling,
   testServerErrorHandling,
 } from "./utils";
-import { itemsRouter } from "../../src/routes/models/items";
 
 describe("Bookings", () => {
   let item = new Item({

@@ -12,12 +12,12 @@ describe("Auth", () => {
   let authenticatedCookie: any;
 
   beforeAll(async () => {
-    server.setup();
+    await server.setup();
     await user.save();
   });
   afterAll(async () => {
     await user.remove();
-    server.stop();
+    await server.stop();
   });
 
   describe("Logout", () => {

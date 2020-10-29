@@ -17,6 +17,7 @@ import { setupPassportJWTStrategy, setupPassportLocalStrategy } from "./auth";
 import { setupMailer } from "./services/mail";
 import passport from "passport";
 import session from "express-session";
+import { notFound } from "./routes/error";
 
 export const app = express();
 export let server: Server;
@@ -67,6 +68,7 @@ export const setup = async () => {
   // register routes
   app.use("/api", apiRoutes());
   app.use(webRoutes());
+  app.use(notFound);
 
   // set server
   server = https.createServer(httpsOptions, app);
