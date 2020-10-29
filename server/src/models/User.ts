@@ -73,6 +73,11 @@ export interface IUser extends mongoose.Document {
    * Sends a mail to this user to inform them of their new access.
    */
   notifyNewAccess: (itemId: ObjectId | string) => Promise<void>;
+
+  /**
+   * Sends a mail to this user to give them password reset instructions.
+   */
+  notifyPasswordReset: () => Promise<void>;
 }
 
 // *** Methods
@@ -152,6 +157,17 @@ UserSchema.methods.notifyNewAccess = async function (
     `<p>Hello,<br>You've been invited to join us</p>`,
     `View ${itemName}`,
     `https://item`
+  );
+};
+
+UserSchema.methods.notifyPasswordReset = async function (): Promise<void> {
+  const signature = this.createActionToken("password-reset");
+  await sendMailCallToAction(
+    this.email,
+    "Password reset request",
+    `<p>Hello,<br>You've requested a password reset, please follwing this link to complete the reset</p>`,
+    `Reset password`,
+    `https://reset?signature=${signature}`
   );
 };
 

@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { TOKEN_LIFESPAN } from "../auth";
-import { IUser } from "../models/User";
+import User, { IUser } from "../models/User";
 import passport from "passport";
+import { NotFoundError } from "../errors";
 
 /**
  * Generates and returns a new JWT for currently authenticated user.
@@ -33,4 +34,27 @@ export const login = passport.authenticate("local", {
  */
 export const logout = (req: Request, res: Response) => {
   (req.session as Express.Session).destroy((err) => res.redirect("/login"));
+};
+
+/**
+ * Send password reset instructions to user matching given `req.body.email`.
+ * @throws `NotFoundError`
+ */
+export const requestPasswordReset = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findOne({ email: req.body.email }).exec();
+
+    if (!user) {
+      throw new NotFoundError();
+    }
+
+    await user.notifyPasswordReset();
+    res.status(200).send();
+  } catch (err) {
+    next(err);
+  }
 };

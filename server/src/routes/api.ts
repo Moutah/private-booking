@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import passport from "passport";
-import { generateNewToken } from "../controllers/auth";
-import { validateActionToken, validateRefreshToken } from "../middleware/auth";
+import { validateActionToken } from "../middleware/auth";
 import { handleErrorJson } from "../middleware/error";
 import {
   loadMeAsTargetUser,
@@ -12,6 +11,7 @@ import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
 import { meRouter, usersRouter } from "./models/users";
 import * as usersController from "../controllers/users";
+import { jwtRefreshRoutes, loginRoutes, passwordResetRoutes } from "./auth";
 
 const jwtRoutes = () => {
   // create router
@@ -35,20 +35,6 @@ const jwtRoutes = () => {
   return routesJWT;
 };
 
-const jwtRefreshRoutes = () => {
-  // create router
-  const routesJWTRefresh = express.Router({ strict: true });
-
-  // protect routes with JWT refresh guard
-  routesJWTRefresh.post("/refresh-token", [
-    passport.authenticate("jwt-refresh", { session: false }),
-    validateRefreshToken(),
-    generateNewToken,
-  ]);
-
-  return routesJWTRefresh;
-};
-
 const jwtActionRoutes = () => {
   // create router
   const routesJWTAction = express.Router({ strict: true });
@@ -65,24 +51,12 @@ const jwtActionRoutes = () => {
   return routesJWTAction;
 };
 
-const loginRoutes = () => {
-  // create router
-  const routesLogin = express.Router({ strict: true });
-
-  // bind routes
-  routesLogin.post("/login", [
-    passport.authenticate("local"),
-    generateNewToken,
-  ]);
-
-  return routesLogin;
-};
-
 export const apiRoutes = () => {
   const routes = express.Router({ strict: true });
   routes.use(loginRoutes());
   routes.use(jwtRefreshRoutes());
   routes.use(jwtActionRoutes());
+  routes.use(passwordResetRoutes());
   routes.use(jwtRoutes());
 
   // error handling middleware

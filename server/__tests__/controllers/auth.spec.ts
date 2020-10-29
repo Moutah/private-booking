@@ -1,10 +1,17 @@
 import supertest from "supertest";
 import * as server from "../../src/server";
-import User from "../../src/models/User";
+import User, { IUser } from "../../src/models/User";
 import { TOKEN_LIFESPAN } from "../../src/auth";
+import { transport } from "../../src/services/mail";
+
+jest.mock("nodemailer", () => ({
+  createTransport: () => ({
+    sendMail: jest.fn(),
+  }),
+}));
 
 describe("Auth", () => {
-  const user = new User({
+  let user = new User({
     name: "test user",
     email: "test.user@mail.com",
     password: "p@ssw0rd",
@@ -127,6 +134,67 @@ describe("Auth", () => {
         .set("Authorization", "Bearer " + refreshToken)
         .trustLocalhost();
       expect(response.status).toBe(401);
+    });
+  });
+
+  describe("Password reset", () => {
+    it("cannot request password reset without user email", async () => {
+      const response = await supertest(server.server)
+        .post(`/api/request-password-reset`)
+        .trustLocalhost();
+      expect(response.status).toBe(404);
+      expect(transport.sendMail).not.toHaveBeenCalled();
+    });
+
+    it("can request password reset", async () => {
+      const response = await supertest(server.server)
+        .post(`/api/request-password-reset`)
+        .send({
+          email: user.email,
+        })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+      expect(transport.sendMail).toHaveBeenCalled();
+    });
+
+    it("cannot reset password with invalid token", async () => {
+      const jwt = await user.createActionToken("wrong-action");
+      const response = await supertest(server.server)
+        .post(`/api/reset-password`)
+        .send({
+          password: "new password",
+        })
+        .set("Authorization", "Bearer " + jwt)
+        .trustLocalhost();
+      expect(response.status).toBe(401);
+
+      // reload user
+      user = (await User.findById(user._id.toHexString())
+        .select("password")
+        .exec()) as IUser;
+
+      // check he's now bound to item
+      expect(await user.verifyPassword("new password")).toBe(false);
+    });
+
+    it("can reset password with valid token", async () => {
+      const jwt = await user.createActionToken("password-reset");
+      const response = await supertest(server.server)
+        .post(`/api/reset-password`)
+        .send({
+          password: "new password",
+        })
+        .set("Authorization", "Bearer " + jwt)
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+
+      // reload user
+      user = (await User.findById(user._id.toHexString())
+        .select("password")
+        .exec()) as IUser;
+
+      // check he's now bound to item
+      expect(await user.verifyPassword("new password")).toBe(true);
     });
   });
 });

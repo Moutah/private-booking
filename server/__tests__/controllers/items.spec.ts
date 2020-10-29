@@ -461,7 +461,7 @@ describe("Items", () => {
     });
 
     it("requires an email in the request", async () => {
-      // run a request that will work
+      // run a request that will not work
       const response = await supertest(server.server)
         .post(`/api/items/test-item/invite`)
         .set("Authorization", "Bearer " + manager.createJWT())
@@ -469,7 +469,7 @@ describe("Items", () => {
       expect(response.status).toBe(422);
 
       // check user was not notified
-      // expect(otherUser.notifyNewAccess).not.toHaveBeenCalled();
+      expect(transport.sendMail).not.toHaveBeenCalled();
 
       // reload otherUser
       otherUser = (await User.findById(otherUser._id.toHexString())) as IUser;
