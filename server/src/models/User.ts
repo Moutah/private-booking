@@ -3,9 +3,14 @@ import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import jsonwebtoken from "jsonwebtoken";
-import { TOKEN_LIFESPAN, TOKEN_REFRESH_LIFESPAN } from "../auth";
+import {
+  TOKEN_LIFESPAN,
+  TOKEN_REFRESH_LIFESPAN,
+  TOKEN_REGISTER_LIFESPAN,
+} from "../auth";
 import { sendMailCallToAction } from "../services/mail";
 import { randomString } from "../helpers";
+import { sign } from "crypto";
 
 // schema
 const UserSchema = new mongoose.Schema({
@@ -54,6 +59,11 @@ export interface IUser extends mongoose.Document {
   createRefreshToken: () => Promise<string>;
 
   /**
+   * Creates a JWT to register this user.
+   */
+  createRegisterToken: () => Promise<string>;
+
+  /**
    * Returns `true` if given `itemId` is accessible to this user. Returns
    * `false` otherwise.
    */
@@ -82,7 +92,6 @@ UserSchema.methods.createJWT = function (): string {
       email: this.email,
       scope: this.isAdmin ? "Full" : "Write",
       aud: process.env.APP_URL,
-      hash: this.refreshHash,
     },
     process.env.APP_KEY as string,
     { expiresIn: TOKEN_LIFESPAN }
@@ -103,6 +112,17 @@ UserSchema.methods.createRefreshToken = async function (): Promise<string> {
   );
 };
 
+UserSchema.methods.createRegisterToken = function (): string {
+  return jsonwebtoken.sign(
+    {
+      sub: this._id,
+      action: "register",
+    },
+    process.env.APP_KEY as string,
+    { expiresIn: TOKEN_REGISTER_LIFESPAN }
+  );
+};
+
 UserSchema.methods.hasAccessToItem = function (
   itemId: ObjectId | string
 ): boolean {
@@ -114,12 +134,13 @@ UserSchema.methods.notifyNewAccess = async function (
 ): Promise<void> {
   // unregistred user
   if (!this.password) {
+    const signature = this.createRegisterToken();
     await sendMailCallToAction(
       this.email,
       "You've been invited to join Private Booking!",
       `<p>Hello,<br>You've been invited to join us</p>`,
       `Register`,
-      `https://register`
+      `https://register?signature=${signature}`
     );
     return;
   }

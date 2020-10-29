@@ -15,6 +15,11 @@ export let TOKEN_LIFESPAN = 60 * 60; // 1h
 export let TOKEN_REFRESH_LIFESPAN = 30 * 24 * 60 * 60; // 30 days
 
 /**
+ * Register token validity duration in seconds. Defaults to 7 days.
+ */
+export let TOKEN_REGISTER_LIFESPAN = 7 * 24 * 60 * 60; // 7 days
+
+/**
  * Sets `TOKEN_LIFESPAN` from env value if defined and adds the jwt strategy to
  * passport. The strategy checks that the Bearer token is a valid JWT and sets
  * `req.user` to an object with `_id` being the id of the user of the token.
@@ -23,9 +28,6 @@ export const setupPassportJWTStrategy = () => {
   // set token lifespan from env value
   if (process.env.TOKEN_LIFESPAN) {
     TOKEN_LIFESPAN = parseInt(process.env.TOKEN_LIFESPAN);
-  }
-  if (process.env.TOKEN_REFRESH_LIFESPAN) {
-    TOKEN_REFRESH_LIFESPAN = parseInt(process.env.TOKEN_REFRESH_LIFESPAN);
   }
 
   // standard jwt
@@ -46,6 +48,18 @@ export const setupPassportJWTStrategy = () => {
       }
     )
   );
+};
+
+/**
+ * Sets `TOKEN_REFRESH_LIFESPAN` from env value if defined and adds the jwt strategy to
+ * passport. The strategy checks that the Bearer token is a valid JWT and sets
+ * `req.user` to an object with `_id` being the id of the user of the token.
+ */
+export const setupPassportJWTRefreshStrategy = () => {
+  // set token lifespan from env value
+  if (process.env.TOKEN_REFRESH_LIFESPAN) {
+    TOKEN_REFRESH_LIFESPAN = parseInt(process.env.TOKEN_REFRESH_LIFESPAN);
+  }
 
   // refresh jwt
   passport.use(
@@ -59,6 +73,37 @@ export const setupPassportJWTStrategy = () => {
         // invalid JWT
         if (!token.hash) {
           return done(new UnauthorizedError("Invalid refresh token"));
+        }
+
+        return done(null, { _id: token.sub });
+      }
+    )
+  );
+};
+
+/**
+ * Sets `TOKEN_REFRESH_LIFESPAN` from env value if defined and adds the jwt strategy to
+ * passport. The strategy checks that the Bearer token is a valid JWT and sets
+ * `req.user` to an object with `_id` being the id of the user of the token.
+ */
+export const setupPassportJWTRegisterStrategy = () => {
+  // set token lifespan from env value
+  if (process.env.TOKEN_REGISTER_LIFESPAN) {
+    TOKEN_REGISTER_LIFESPAN = parseInt(process.env.TOKEN_REGISTER_LIFESPAN);
+  }
+
+  // refresh jwt
+  passport.use(
+    "jwt-register",
+    new JwtStrategy(
+      {
+        secretOrKey: process.env.APP_KEY,
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      },
+      async (token, done) => {
+        // invalid JWT
+        if (token.action !== "register") {
+          return done(new UnauthorizedError("Invalid register token"));
         }
 
         return done(null, { _id: token.sub });

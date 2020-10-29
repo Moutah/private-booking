@@ -1,5 +1,6 @@
 import User, { IUser } from "../models/User";
 import { NextFunction, Request, Response } from "express";
+import { ForbiddenError } from "../errors";
 
 /**
  * Returns the user loaded into `req.targetUser`.
@@ -19,7 +20,7 @@ export const update = async (
   try {
     let user = req.targetUser as IUser;
 
-    // update item
+    // update user
     user.name = req.body.name || user.name;
     user.profileImage =
       req.body.images && req.body.images.length > 0

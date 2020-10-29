@@ -28,6 +28,11 @@ export const verifyUserIsAdmin = () => async (
   }
 };
 
+/**
+ * Returns an express middleware function that verify that the current JWT is
+ * not revoked.
+ * @throws `UnauthorizedError`
+ */
 export const validateRefreshToken = () => async (
   req: Request,
   res: Response,
@@ -41,7 +46,7 @@ export const validateRefreshToken = () => async (
       ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string
     ) as { [key: string]: any };
 
-    // user not found or not admin
+    // user not found or hash mismatch
     if (!user || user.refreshHash !== jwt.hash) {
       throw new UnauthorizedError("Unrecognized refresh token");
     }

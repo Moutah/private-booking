@@ -78,9 +78,11 @@ describe("Auth", () => {
     });
 
     it("does not accept user's standard JWT", async () => {
-      const jwt = user.createJWT();
+      // make sure the user has a hash
+      await user.createRefreshToken();
 
       // get valid JWT for this user
+      const jwt = user.createJWT();
       const response = await supertest(server.server)
         .post(`/api/refresh-token`)
         .set("Authorization", "Bearer " + jwt)

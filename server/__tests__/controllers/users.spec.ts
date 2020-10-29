@@ -186,4 +186,69 @@ describe("Users", () => {
       expect(zoe.password).not.toBe("bob is now zoe"); // new password should've been hased
     });
   });
+
+  describe("register", () => {
+    let newUser = new User({
+      name: "Unregistred",
+      email: "new.user@mail.com",
+    });
+
+    // create test user
+    beforeAll(async () => {
+      await newUser.save();
+    });
+
+    // cleanup inserted items
+    afterAll(async () => {
+      await newUser.remove();
+    });
+
+    it("cannot register with standard JWT", async () => {
+      // get valid JWT for this user
+      const jwt = newUser.createJWT();
+      const response = await supertest(server.server)
+        .post(`/api/users/register`)
+        .set("Authorization", "Bearer " + jwt)
+        .trustLocalhost();
+      expect(response.status).toBe(401);
+    });
+
+    it("cannot register with refresh token", async () => {
+      // get valid JWT for this user
+      const jwt = await newUser.createRefreshToken();
+      const response = await supertest(server.server)
+        .post(`/api/users/register`)
+        .set("Authorization", "Bearer " + jwt)
+        .trustLocalhost();
+      expect(response.status).toBe(401);
+    });
+
+    it("can register with register token", async () => {
+      // get valid JWT for this user
+      const jwt = newUser.createRegisterToken();
+      const response = await supertest(server.server)
+        .post(`/api/users/register`)
+        .set("Authorization", "Bearer " + jwt)
+        .send({
+          name: "New user",
+          password: "potato",
+        })
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+    });
+
+    it("cannot register an already registerd user", async () => {
+      // get valid JWT for this user
+      const jwt = newUser.createRegisterToken();
+      const response = await supertest(server.server)
+        .post(`/api/users/register`)
+        .set("Authorization", "Bearer " + jwt)
+        .send({
+          name: "New user",
+          password: "potato",
+        })
+        .trustLocalhost();
+      expect(response.status).toBe(403);
+    });
+  });
 });

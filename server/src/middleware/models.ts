@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { NotFoundError } from "../errors";
+import { ForbiddenError, NotFoundError } from "../errors";
 import Booking from "../models/Booking";
 import Item from "../models/Item";
 import Post from "../models/Post";
@@ -121,6 +121,32 @@ export const loadMeAsTargetUser = () => async (
     }
 
     req.targetUser = user;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Returns an express middleware function that verifies that current
+ * `req.targetUser` is not yet registred.
+ * @throws `ForbiddenError`
+ */
+export const validateUserNotRegistred = () => async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById(req.targetUser?._id)
+      .select("password")
+      .exec();
+
+    // user not found or already registred
+    if (user?.password) {
+      throw new ForbiddenError("Already registred");
+    }
+
     next();
   } catch (err) {
     next(err);

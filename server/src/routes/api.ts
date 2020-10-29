@@ -3,10 +3,15 @@ import passport from "passport";
 import { generateNewToken } from "../controllers/auth";
 import { validateRefreshToken } from "../middleware/auth";
 import { handleErrorJson } from "../middleware/error";
+import {
+  loadMeAsTargetUser,
+  validateUserNotRegistred,
+} from "../middleware/models";
 import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
 import { postsRouter } from "./models/posts";
 import { meRouter, usersRouter } from "./models/users";
+import * as usersController from "../controllers/users";
 
 const jwtRoutes = () => {
   // create router
@@ -48,6 +53,23 @@ const jwtRefreshRoutes = () => {
   return routesJWTRefresh;
 };
 
+const jwtRegisterRoutes = () => {
+  // create router
+  const routesJWTRegister = express.Router({
+    strict: true,
+  });
+
+  // protect routes with JWT refresh guard
+  routesJWTRegister.post("/users/register", [
+    passport.authenticate("jwt-register", { session: false }),
+    loadMeAsTargetUser(),
+    validateUserNotRegistred(),
+    usersController.update,
+  ]);
+
+  return routesJWTRegister;
+};
+
 const loginRoutes = () => {
   // create router
   const routesLogin = express.Router({
@@ -67,6 +89,7 @@ export const apiRoutes = () => {
   const routes = express.Router({ strict: true });
   routes.use(loginRoutes());
   routes.use(jwtRefreshRoutes());
+  routes.use(jwtRegisterRoutes());
   routes.use(jwtRoutes());
 
   // error handling middleware

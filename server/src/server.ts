@@ -13,7 +13,12 @@ import "./models/Item";
 import "./models/Post";
 import "./models/User";
 import fileUpload from "express-fileupload";
-import { setupPassportJWTStrategy, setupPassportLocalStrategy } from "./auth";
+import {
+  setupPassportJWTRefreshStrategy,
+  setupPassportJWTRegisterStrategy,
+  setupPassportJWTStrategy,
+  setupPassportLocalStrategy,
+} from "./auth";
 import { setupMailer } from "./services/mail";
 import passport from "passport";
 import session from "express-session";
@@ -58,6 +63,8 @@ export const setup = async () => {
 
   // setup auth guard
   setupPassportJWTStrategy();
+  setupPassportJWTRefreshStrategy();
+  setupPassportJWTRegisterStrategy();
   setupPassportLocalStrategy();
   app.use(passport.initialize());
   app.use(passport.session());
