@@ -5,8 +5,20 @@ import { TOKEN_LIFESPAN, TOKEN_REFRESH_LIFESPAN } from "../src/auth";
 import User from "../src/models/User";
 
 describe("Auth", () => {
-  beforeAll(server.setup);
-  afterAll(server.stop);
+  const user = new User({
+    name: "test user",
+    email: "test.user@mail.com",
+    password: "p@ssw0rd",
+  });
+
+  beforeAll(async () => {
+    await server.setup();
+    await user.save();
+  });
+  afterAll(async () => {
+    await user.remove();
+    await server.stop();
+  });
 
   describe("JWT", () => {
     it("sets TOKEN_LIFESPAN default", async () => {
@@ -55,6 +67,16 @@ describe("Auth", () => {
       expect(response.status).toBe(401);
     });
 
+    it("does not accept refresh token", async () => {
+      const refreshToken = await user.createRefreshToken();
+
+      const response = await supertest(server.server)
+        .get(`/api/ping`)
+        .set("Authorization", "Bearer " + refreshToken)
+        .trustLocalhost();
+      expect(response.status).toBe(401);
+    });
+
     it("allows request if valid JWT provided", async () => {
       const response = await supertest(server.server)
         .get(`/api/ping`)
@@ -65,19 +87,7 @@ describe("Auth", () => {
   });
 
   describe("Local", () => {
-    const user = new User({
-      name: "test user",
-      email: "test.user@mail.com",
-      password: "p@ssw0rd",
-    });
     let authenticatedCookie: any;
-
-    beforeAll(async () => {
-      await user.save();
-    });
-    afterAll(async () => {
-      await user.remove();
-    });
 
     it("redirects to /login if no authenticated session active.", async () => {
       // accessing protected route is redirected to /login

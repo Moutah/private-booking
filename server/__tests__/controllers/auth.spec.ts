@@ -77,20 +77,15 @@ describe("Auth", () => {
       expect(response.body.validity).toBe(TOKEN_LIFESPAN - 1);
     });
 
-    it("can give a new token with user current JWT", async () => {
-      // make sure the user has a hash
-      await user.createRefreshToken();
-      const jwt = await user.createRefreshToken();
+    it("does not accept user's standard JWT", async () => {
+      const jwt = user.createJWT();
 
       // get valid JWT for this user
       const response = await supertest(server.server)
         .post(`/api/refresh-token`)
         .set("Authorization", "Bearer " + jwt)
         .trustLocalhost();
-      expect(response.status).toBe(200);
-      expect(response.body.token).toBeTruthy();
-      expect(response.body.refreshToken).toBeTruthy();
-      expect(response.body.validity).toBe(TOKEN_LIFESPAN - 1);
+      expect(response.status).toBe(401);
     });
 
     it("can give a new token with user refresh token", async () => {

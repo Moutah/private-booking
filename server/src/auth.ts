@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import { Strategy as LocalStrategy } from "passport-local";
+import { UnauthorizedError } from "./errors";
 import User, { IUser } from "./models/User";
 
 /**
@@ -27,6 +28,7 @@ export const setupPassportJWTStrategy = () => {
     TOKEN_REFRESH_LIFESPAN = parseInt(process.env.TOKEN_REFRESH_LIFESPAN);
   }
 
+  // standard jwt
   passport.use(
     "jwt",
     new JwtStrategy(
@@ -35,6 +37,30 @@ export const setupPassportJWTStrategy = () => {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       },
       async (token, done) => {
+        // invalid JWT
+        if (token.aud != process.env.APP_URL) {
+          return done(new UnauthorizedError("Invalid token"));
+        }
+
+        return done(null, { _id: token.sub });
+      }
+    )
+  );
+
+  // refresh jwt
+  passport.use(
+    "jwt-refresh",
+    new JwtStrategy(
+      {
+        secretOrKey: process.env.APP_KEY,
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      },
+      async (token, done) => {
+        // invalid JWT
+        if (!token.hash) {
+          return done(new UnauthorizedError("Invalid refresh token"));
+        }
+
         return done(null, { _id: token.sub });
       }
     )

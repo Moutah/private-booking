@@ -43,7 +43,7 @@ export const validateRefreshToken = () => async (
 
     // user not found or not admin
     if (!user || user.refreshHash !== jwt.hash) {
-      throw new UnauthorizedError("Invalid token");
+      throw new UnauthorizedError("Unrecognized refresh token");
     }
 
     // set user to req

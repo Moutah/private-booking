@@ -28,9 +28,24 @@ const jwtRoutes = () => {
   routesJWT.use("/items/:itemSlug/bookings", bookingsRouter);
   routesJWT.use("/me", meRouter);
   routesJWT.use("/users", usersRouter);
-  routesJWT.use("/refresh-token", [validateRefreshToken(), generateNewToken]);
 
   return routesJWT;
+};
+
+const jwtRefreshRoutes = () => {
+  // create router
+  const routesJWTRefresh = express.Router({
+    strict: true,
+  });
+
+  // protect routes with JWT refresh guard
+  routesJWTRefresh.post("/refresh-token", [
+    passport.authenticate("jwt-refresh", { session: false }),
+    validateRefreshToken(),
+    generateNewToken,
+  ]);
+
+  return routesJWTRefresh;
 };
 
 const loginRoutes = () => {
@@ -51,6 +66,7 @@ const loginRoutes = () => {
 export const apiRoutes = () => {
   const routes = express.Router({ strict: true });
   routes.use(loginRoutes());
+  routes.use(jwtRefreshRoutes());
   routes.use(jwtRoutes());
 
   // error handling middleware

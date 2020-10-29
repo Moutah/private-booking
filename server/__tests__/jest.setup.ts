@@ -10,6 +10,7 @@ process.env.TEST_TOKEN = jsonwebtoken.sign(
   {
     sub: process.env.TEST_USER_ID,
     name: "test token",
+    aud: process.env.APP_URL,
   },
   process.env.APP_KEY as string,
   { expiresIn: 3600 } // 1h
