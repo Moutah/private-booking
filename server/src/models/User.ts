@@ -3,8 +3,9 @@ import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import jsonwebtoken from "jsonwebtoken";
-import { TOKEN_LIFESPAN } from "../auth";
+import { TOKEN_LIFESPAN, TOKEN_REFRESH_LIFESPAN } from "../auth";
 import { sendMailCallToAction } from "../services/mail";
+import { randomString } from "../helpers";
 
 // schema
 const UserSchema = new mongoose.Schema({
@@ -17,6 +18,7 @@ const UserSchema = new mongoose.Schema({
     unique: true,
   },
   password: { type: String, select: false },
+  refreshHash: { type: String, select: false },
 
   isAdmin: { type: Boolean, default: false },
 
@@ -30,6 +32,7 @@ export interface IUser extends mongoose.Document {
 
   email: string;
   password: string;
+  refreshHash: string;
 
   isAdmin: boolean;
 
@@ -44,6 +47,11 @@ export interface IUser extends mongoose.Document {
    * Creates a JWT for this user.
    */
   createJWT: () => string;
+
+  /**
+   * Creates a JWT refresh token for this user.
+   */
+  createRefreshToken: () => Promise<string>;
 
   /**
    * Returns `true` if given `itemId` is accessible to this user. Returns
@@ -74,9 +82,24 @@ UserSchema.methods.createJWT = function (): string {
       email: this.email,
       scope: this.isAdmin ? "Full" : "Write",
       aud: process.env.APP_URL,
+      hash: this.refreshHash,
     },
     process.env.APP_KEY as string,
     { expiresIn: TOKEN_LIFESPAN }
+  );
+};
+
+UserSchema.methods.createRefreshToken = async function (): Promise<string> {
+  this.refreshHash = randomString(64);
+  await this.save();
+
+  return jsonwebtoken.sign(
+    {
+      sub: this._id,
+      hash: this.refreshHash,
+    },
+    process.env.APP_KEY as string,
+    { expiresIn: TOKEN_REFRESH_LIFESPAN }
   );
 };
 

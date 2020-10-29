@@ -11,9 +11,12 @@ export const generateNewToken = async (
   res: Response,
   next: NextFunction
 ) => {
+  const user = req.user as IUser;
+
   // create and returns a new JWT
-  const token = (req.user as IUser).createJWT();
-  res.json({ token, expiresIn: TOKEN_LIFESPAN - 1 });
+  const refreshToken = await user.createRefreshToken();
+  const token = user.createJWT();
+  res.json({ token, validity: TOKEN_LIFESPAN - 1, refreshToken });
 };
 
 /**

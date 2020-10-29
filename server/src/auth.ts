@@ -4,9 +4,14 @@ import { Strategy as LocalStrategy } from "passport-local";
 import User, { IUser } from "./models/User";
 
 /**
- * Token validity duration in seconds.
+ * Token validity duration in seconds. Defaults to 1h.
  */
-export let TOKEN_LIFESPAN = 60 * 60;
+export let TOKEN_LIFESPAN = 60 * 60; // 1h
+
+/**
+ * Refresh token validity duration in seconds. Defaults to 30 days.
+ */
+export let TOKEN_REFRESH_LIFESPAN = 30 * 24 * 60 * 60; // 30 days
 
 /**
  * Sets `TOKEN_LIFESPAN` from env value if defined and adds the jwt strategy to
@@ -17,6 +22,9 @@ export const setupPassportJWTStrategy = () => {
   // set token lifespan from env value
   if (process.env.TOKEN_LIFESPAN) {
     TOKEN_LIFESPAN = parseInt(process.env.TOKEN_LIFESPAN);
+  }
+  if (process.env.TOKEN_REFRESH_LIFESPAN) {
+    TOKEN_REFRESH_LIFESPAN = parseInt(process.env.TOKEN_REFRESH_LIFESPAN);
   }
 
   passport.use(

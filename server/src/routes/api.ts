@@ -1,7 +1,7 @@
-import { ensureLoggedIn } from "connect-ensure-login";
 import express, { Request, Response } from "express";
 import passport from "passport";
 import { generateNewToken } from "../controllers/auth";
+import { validateRefreshToken } from "../middleware/auth";
 import { handleErrorJson } from "../middleware/error";
 import { bookingsRouter } from "./models/bookings";
 import { itemsRouter } from "./models/items";
@@ -28,6 +28,7 @@ const jwtRoutes = () => {
   routesJWT.use("/items/:itemSlug/bookings", bookingsRouter);
   routesJWT.use("/me", meRouter);
   routesJWT.use("/users", usersRouter);
+  routesJWT.use("/refresh-token", [validateRefreshToken(), generateNewToken]);
 
   return routesJWT;
 };

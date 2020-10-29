@@ -1,21 +1,22 @@
 import supertest from "supertest";
 import * as server from "../src/server";
 import jsonwebtoken from "jsonwebtoken";
-import { TOKEN_LIFESPAN } from "../src/auth";
-import User, { IUser } from "../src/models/User";
-import { Document } from "mongoose";
+import { TOKEN_LIFESPAN, TOKEN_REFRESH_LIFESPAN } from "../src/auth";
+import User from "../src/models/User";
 
 describe("Auth", () => {
   beforeAll(server.setup);
   afterAll(server.stop);
 
   describe("JWT", () => {
-    it("sets TOKEN_LIFESPAN to 1h by default", async () => {
-      expect.assertions(1);
+    it("sets TOKEN_LIFESPAN default", async () => {
+      expect.assertions(2);
 
       // manually clear env
       const tokenLifespanBackup = process.env.TOKEN_LIFESPAN;
+      const tokenRefreshLifespanBackup = process.env.TOKEN_REFRESH_LIFESPAN;
       delete process.env.TOKEN_LIFESPAN;
+      delete process.env.TOKEN_REFRESH_LIFESPAN;
 
       // restart server
       await server.stop();
@@ -23,9 +24,11 @@ describe("Auth", () => {
 
       // test default value
       expect(TOKEN_LIFESPAN).toBe(60 * 60);
+      expect(TOKEN_REFRESH_LIFESPAN).toBe(30 * 24 * 60 * 60);
 
       // restore env
       process.env.TOKEN_LIFESPAN = tokenLifespanBackup;
+      process.env.TOKEN_REFRESH_LIFESPAN = tokenRefreshLifespanBackup;
     });
 
     it("aborts request with 401 if no JWT provided", async () => {

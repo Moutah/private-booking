@@ -29,3 +29,18 @@ export const nextAvailableSlug = (
 
   return baseSlug + "-1";
 };
+
+/**
+ * Returns a random string of given `length` with characters in the set
+ * [a-zA-Z0-9].
+ */
+export const randomString = (length: number): string => {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};

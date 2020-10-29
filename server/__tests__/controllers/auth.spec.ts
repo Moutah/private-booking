@@ -62,7 +62,7 @@ describe("Auth", () => {
       expect(response.status).toBe(401);
     });
 
-    it("can given a new token", async () => {
+    it("can given a new token with user credentials", async () => {
       // get valid JWT for this user
       const response = await supertest(server.server)
         .post(`/api/login`)
@@ -73,7 +73,63 @@ describe("Auth", () => {
         .trustLocalhost();
       expect(response.status).toBe(200);
       expect(response.body.token).toBeTruthy();
-      expect(response.body.expiresIn).toBe(TOKEN_LIFESPAN - 1);
+      expect(response.body.refreshToken).toBeTruthy();
+      expect(response.body.validity).toBe(TOKEN_LIFESPAN - 1);
+    });
+
+    it("can give a new token with user current JWT", async () => {
+      // make sure the user has a hash
+      await user.createRefreshToken();
+      const jwt = await user.createRefreshToken();
+
+      // get valid JWT for this user
+      const response = await supertest(server.server)
+        .post(`/api/refresh-token`)
+        .set("Authorization", "Bearer " + jwt)
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+      expect(response.body.token).toBeTruthy();
+      expect(response.body.refreshToken).toBeTruthy();
+      expect(response.body.validity).toBe(TOKEN_LIFESPAN - 1);
+    });
+
+    it("can give a new token with user refresh token", async () => {
+      const refreshToken = await user.createRefreshToken();
+
+      // get valid JWT for this user
+      const response = await supertest(server.server)
+        .post(`/api/refresh-token`)
+        .set("Authorization", "Bearer " + refreshToken)
+        .trustLocalhost();
+      expect(response.status).toBe(200);
+      expect(response.body.token).toBeTruthy();
+      expect(response.body.refreshToken).toBeTruthy();
+      expect(response.body.validity).toBe(TOKEN_LIFESPAN - 1);
+    });
+
+    it("fails if req.user does not link to a known user", async () => {
+      // mute console
+      jest.spyOn(console, "error").mockImplementationOnce(() => {});
+
+      const response = await supertest(server.server)
+        .post(`/api/refresh-token`)
+        .set("Authorization", "Bearer " + process.env.TEST_TOKEN)
+        .trustLocalhost();
+      expect(response.status).toBe(401);
+    });
+
+    it("fails if refresh token not recognized", async () => {
+      let refreshToken = await user.createRefreshToken();
+
+      // generate a new refresh token that will overwrite the one recieved above
+      await user.createRefreshToken();
+
+      // get valid JWT for this user
+      const response = await supertest(server.server)
+        .post(`/api/refresh-token`)
+        .set("Authorization", "Bearer " + refreshToken)
+        .trustLocalhost();
+      expect(response.status).toBe(401);
     });
   });
 });

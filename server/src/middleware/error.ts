@@ -21,6 +21,11 @@ export const handleErrorJson = (
       });
       break;
 
+    // unauthorized error
+    case "UnauthorizedError":
+      res.status(401).json("unauthorized");
+      break;
+
     // forbidden error
     case "ForbiddenError":
       res.status(403).json("Forbidden");
