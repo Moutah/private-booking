@@ -42,17 +42,35 @@ export const validateRefreshToken = () => async (
     const user = await User.findById(req.user?._id)
       .select("refreshHash")
       .exec();
-    const jwt = jsonwebtoken.decode(
-      ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string
-    ) as { [key: string]: any };
 
     // user not found or hash mismatch
-    if (!user || user.refreshHash !== jwt.hash) {
+    if (!user || user.refreshHash !== req.authInfo?.hash) {
       throw new UnauthorizedError("Unrecognized refresh token");
     }
 
     // set user to req
     req.user = user;
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Returns an express middleware function that verify that the current action
+ * JWT is for given `action`.
+ * @throws `UnauthorizedError`
+ */
+export const validateActionToken = (action: string) => async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (req.authInfo?.action !== action) {
+      throw new UnauthorizedError("Unrecognized refresh token");
+    }
 
     next();
   } catch (err) {

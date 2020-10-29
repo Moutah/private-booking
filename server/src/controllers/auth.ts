@@ -16,7 +16,7 @@ export const generateNewToken = async (
   // create and returns a new JWT
   const refreshToken = await user.createRefreshToken();
   const token = user.createJWT();
-  res.json({ token, validity: TOKEN_LIFESPAN - 1, refreshToken });
+  res.json({ token, validity: TOKEN_LIFESPAN() - 1, refreshToken });
 };
 
 /**

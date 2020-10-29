@@ -74,7 +74,7 @@ describe("Auth", () => {
       expect(response.status).toBe(200);
       expect(response.body.token).toBeTruthy();
       expect(response.body.refreshToken).toBeTruthy();
-      expect(response.body.validity).toBe(TOKEN_LIFESPAN - 1);
+      expect(response.body.validity).toBe(TOKEN_LIFESPAN() - 1);
     });
 
     it("does not accept user's standard JWT", async () => {
@@ -101,7 +101,7 @@ describe("Auth", () => {
       expect(response.status).toBe(200);
       expect(response.body.token).toBeTruthy();
       expect(response.body.refreshToken).toBeTruthy();
-      expect(response.body.validity).toBe(TOKEN_LIFESPAN - 1);
+      expect(response.body.validity).toBe(TOKEN_LIFESPAN() - 1);
     });
 
     it("fails if req.user does not link to a known user", async () => {

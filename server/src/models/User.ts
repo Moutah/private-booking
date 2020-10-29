@@ -61,7 +61,7 @@ export interface IUser extends mongoose.Document {
   /**
    * Creates a JWT to register this user.
    */
-  createRegisterToken: () => Promise<string>;
+  createActionToken: (action: string) => string;
 
   /**
    * Returns `true` if given `itemId` is accessible to this user. Returns
@@ -94,7 +94,7 @@ UserSchema.methods.createJWT = function (): string {
       aud: process.env.APP_URL,
     },
     process.env.APP_KEY as string,
-    { expiresIn: TOKEN_LIFESPAN }
+    { expiresIn: TOKEN_LIFESPAN() }
   );
 };
 
@@ -108,18 +108,18 @@ UserSchema.methods.createRefreshToken = async function (): Promise<string> {
       hash: this.refreshHash,
     },
     process.env.APP_KEY as string,
-    { expiresIn: TOKEN_REFRESH_LIFESPAN }
+    { expiresIn: TOKEN_REFRESH_LIFESPAN() }
   );
 };
 
-UserSchema.methods.createRegisterToken = function (): string {
+UserSchema.methods.createActionToken = function (action: string): string {
   return jsonwebtoken.sign(
     {
       sub: this._id,
-      action: "register",
+      action,
     },
     process.env.APP_KEY as string,
-    { expiresIn: TOKEN_REGISTER_LIFESPAN }
+    { expiresIn: TOKEN_REGISTER_LIFESPAN() }
   );
 };
 
@@ -134,7 +134,7 @@ UserSchema.methods.notifyNewAccess = async function (
 ): Promise<void> {
   // unregistred user
   if (!this.password) {
-    const signature = this.createRegisterToken();
+    const signature = this.createActionToken("register");
     await sendMailCallToAction(
       this.email,
       "You've been invited to join Private Booking!",

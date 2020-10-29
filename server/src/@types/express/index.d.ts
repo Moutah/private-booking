@@ -15,5 +15,10 @@ declare global {
     interface User {
       _id: string;
     }
+
+    interface AuthInfo {
+      action?: string;
+      hash?: string;
+    }
   }
 }

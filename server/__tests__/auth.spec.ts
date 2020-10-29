@@ -3,6 +3,7 @@ import * as server from "../src/server";
 import jsonwebtoken from "jsonwebtoken";
 import {
   TOKEN_LIFESPAN,
+  TOKEN_PASSWORD_RESET_LIFESPAN,
   TOKEN_REFRESH_LIFESPAN,
   TOKEN_REGISTER_LIFESPAN,
 } from "../src/auth";
@@ -26,29 +27,32 @@ describe("Auth", () => {
 
   describe("JWT", () => {
     it("sets TOKEN_LIFESPAN default", async () => {
-      expect.assertions(3);
-
       // manually clear env
       const tokenLifespanBackup = process.env.TOKEN_LIFESPAN;
       const tokenRefreshLifespanBackup = process.env.TOKEN_REFRESH_LIFESPAN;
       const tokenRegisterLifespanBackup = process.env.TOKEN_REGISTER_LIFESPAN;
+      const tokenPasswordResetLifespanBackup =
+        process.env.TOKEN_PASSWORD_RESET_LIFESPAN;
       delete process.env.TOKEN_LIFESPAN;
       delete process.env.TOKEN_REFRESH_LIFESPAN;
       delete process.env.TOKEN_REGISTER_LIFESPAN;
+      delete process.env.TOKEN_PASSWORD_RESET_LIFESPAN;
 
       // restart server
       await server.stop();
       await server.setup();
 
       // test default value
-      expect(TOKEN_LIFESPAN).toBe(60 * 60);
-      expect(TOKEN_REFRESH_LIFESPAN).toBe(30 * 24 * 60 * 60);
-      expect(TOKEN_REGISTER_LIFESPAN).toBe(7 * 24 * 60 * 60);
+      expect(TOKEN_LIFESPAN()).toBe(60 * 60);
+      expect(TOKEN_REFRESH_LIFESPAN()).toBe(30 * 24 * 60 * 60);
+      expect(TOKEN_REGISTER_LIFESPAN()).toBe(30 * 24 * 60 * 60);
+      expect(TOKEN_PASSWORD_RESET_LIFESPAN()).toBe(60 * 60);
 
       // restore env
       process.env.TOKEN_LIFESPAN = tokenLifespanBackup;
       process.env.TOKEN_REFRESH_LIFESPAN = tokenRefreshLifespanBackup;
       process.env.TOKEN_REGISTER_LIFESPAN = tokenRegisterLifespanBackup;
+      process.env.TOKEN_PASSWORD_RESET_LIFESPAN = tokenPasswordResetLifespanBackup;
     });
 
     it("aborts request with 401 if no JWT provided", async () => {

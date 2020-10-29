@@ -223,9 +223,23 @@ describe("Users", () => {
       expect(response.status).toBe(401);
     });
 
+    it("cannot register with token having wrong action", async () => {
+      // get valid JWT for this user
+      const jwt = newUser.createActionToken("password-reset");
+      const response = await supertest(server.server)
+        .post(`/api/users/register`)
+        .set("Authorization", "Bearer " + jwt)
+        .send({
+          name: "New user",
+          password: "potato",
+        })
+        .trustLocalhost();
+      expect(response.status).toBe(401);
+    });
+
     it("can register with register token", async () => {
       // get valid JWT for this user
-      const jwt = newUser.createRegisterToken();
+      const jwt = newUser.createActionToken("register");
       const response = await supertest(server.server)
         .post(`/api/users/register`)
         .set("Authorization", "Bearer " + jwt)
@@ -239,7 +253,7 @@ describe("Users", () => {
 
     it("cannot register an already registerd user", async () => {
       // get valid JWT for this user
-      const jwt = newUser.createRegisterToken();
+      const jwt = newUser.createActionToken("register");
       const response = await supertest(server.server)
         .post(`/api/users/register`)
         .set("Authorization", "Bearer " + jwt)

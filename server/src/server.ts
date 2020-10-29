@@ -15,7 +15,7 @@ import "./models/User";
 import fileUpload from "express-fileupload";
 import {
   setupPassportJWTRefreshStrategy,
-  setupPassportJWTRegisterStrategy,
+  setupPassportJWTActionStrategy,
   setupPassportJWTStrategy,
   setupPassportLocalStrategy,
 } from "./auth";
@@ -64,7 +64,7 @@ export const setup = async () => {
   // setup auth guard
   setupPassportJWTStrategy();
   setupPassportJWTRefreshStrategy();
-  setupPassportJWTRegisterStrategy();
+  setupPassportJWTActionStrategy();
   setupPassportLocalStrategy();
   app.use(passport.initialize());
   app.use(passport.session());

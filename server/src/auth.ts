@@ -7,30 +7,37 @@ import User, { IUser } from "./models/User";
 /**
  * Token validity duration in seconds. Defaults to 1h.
  */
-export let TOKEN_LIFESPAN = 60 * 60; // 1h
+export let TOKEN_LIFESPAN = () =>
+  parseInt(process.env.TOKEN_LIFESPAN || (60 * 60).toString()); // 1h
 
 /**
  * Refresh token validity duration in seconds. Defaults to 30 days.
  */
-export let TOKEN_REFRESH_LIFESPAN = 30 * 24 * 60 * 60; // 30 days
+export let TOKEN_REFRESH_LIFESPAN = () =>
+  parseInt(
+    process.env.TOKEN_REFRESH_LIFESPAN || (30 * 24 * 60 * 60).toString()
+  ); // 30 days
 
 /**
- * Register token validity duration in seconds. Defaults to 7 days.
+ * Register token validity duration in seconds. Defaults to 30 days.
  */
-export let TOKEN_REGISTER_LIFESPAN = 7 * 24 * 60 * 60; // 7 days
+export let TOKEN_REGISTER_LIFESPAN = () =>
+  parseInt(
+    process.env.TOKEN_REGISTER_LIFESPAN || (30 * 24 * 60 * 60).toString()
+  ); // 30 days
 
 /**
- * Sets `TOKEN_LIFESPAN` from env value if defined and adds the jwt strategy to
- * passport. The strategy checks that the Bearer token is a valid JWT and sets
- * `req.user` to an object with `_id` being the id of the user of the token.
+ * Register token validity duration in seconds. Defaults to 1h.
+ */
+export let TOKEN_PASSWORD_RESET_LIFESPAN = () =>
+  parseInt(process.env.TOKEN_PASSWORD_RESET_LIFESPAN || (60 * 60).toString()); // 1h
+
+/**
+ * Adds the standard jwt strategy to passport. The strategy checks that the
+ * Bearer token is a valid JWT and sets `req.user` to an object with `_id`
+ * being the id of the user of the token.
  */
 export const setupPassportJWTStrategy = () => {
-  // set token lifespan from env value
-  if (process.env.TOKEN_LIFESPAN) {
-    TOKEN_LIFESPAN = parseInt(process.env.TOKEN_LIFESPAN);
-  }
-
-  // standard jwt
   passport.use(
     "jwt",
     new JwtStrategy(
@@ -51,17 +58,11 @@ export const setupPassportJWTStrategy = () => {
 };
 
 /**
- * Sets `TOKEN_REFRESH_LIFESPAN` from env value if defined and adds the jwt strategy to
- * passport. The strategy checks that the Bearer token is a valid JWT and sets
- * `req.user` to an object with `_id` being the id of the user of the token.
+ * Adds the jwt refresh strategy to passport. The strategy checks that the
+ * Bearer token is a valid JWT and sets `req.user` to an object with `_id`
+ * being the id of the user of the token.
  */
 export const setupPassportJWTRefreshStrategy = () => {
-  // set token lifespan from env value
-  if (process.env.TOKEN_REFRESH_LIFESPAN) {
-    TOKEN_REFRESH_LIFESPAN = parseInt(process.env.TOKEN_REFRESH_LIFESPAN);
-  }
-
-  // refresh jwt
   passport.use(
     "jwt-refresh",
     new JwtStrategy(
@@ -75,26 +76,20 @@ export const setupPassportJWTRefreshStrategy = () => {
           return done(new UnauthorizedError("Invalid refresh token"));
         }
 
-        return done(null, { _id: token.sub });
+        return done(null, { _id: token.sub }, { hash: token.hash });
       }
     )
   );
 };
 
 /**
- * Sets `TOKEN_REFRESH_LIFESPAN` from env value if defined and adds the jwt strategy to
- * passport. The strategy checks that the Bearer token is a valid JWT and sets
- * `req.user` to an object with `_id` being the id of the user of the token.
+ * Adds the jwt action strategy to passport. The strategy checks that the
+ * Bearer token is a valid JWT and sets `req.user` to an object with `_id`
+ * being the id of the user of the token.
  */
-export const setupPassportJWTRegisterStrategy = () => {
-  // set token lifespan from env value
-  if (process.env.TOKEN_REGISTER_LIFESPAN) {
-    TOKEN_REGISTER_LIFESPAN = parseInt(process.env.TOKEN_REGISTER_LIFESPAN);
-  }
-
-  // refresh jwt
+export const setupPassportJWTActionStrategy = () => {
   passport.use(
-    "jwt-register",
+    "jwt-action",
     new JwtStrategy(
       {
         secretOrKey: process.env.APP_KEY,
@@ -102,11 +97,11 @@ export const setupPassportJWTRegisterStrategy = () => {
       },
       async (token, done) => {
         // invalid JWT
-        if (token.action !== "register") {
-          return done(new UnauthorizedError("Invalid register token"));
+        if (!token.action) {
+          return done(new UnauthorizedError("Invalid action token"));
         }
 
-        return done(null, { _id: token.sub });
+        return done(null, { _id: token.sub }, { action: token.action });
       }
     )
   );

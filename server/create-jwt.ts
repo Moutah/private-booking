@@ -38,7 +38,8 @@ db.connect()
     console.log("User #", user._id.toHexString());
 
     // generate JWT
-    const jwt = user.createJWT();
+    const jwt = user.createActionToken("register");
+    // const jwt = user.createJWT();
     console.log("\nFresh JWT:\n", jwt);
   })
   .catch((err) => {

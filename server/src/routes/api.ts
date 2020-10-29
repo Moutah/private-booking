@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import passport from "passport";
 import { generateNewToken } from "../controllers/auth";
-import { validateRefreshToken } from "../middleware/auth";
+import { validateActionToken, validateRefreshToken } from "../middleware/auth";
 import { handleErrorJson } from "../middleware/error";
 import {
   loadMeAsTargetUser,
@@ -15,9 +15,7 @@ import * as usersController from "../controllers/users";
 
 const jwtRoutes = () => {
   // create router
-  const routesJWT = express.Router({
-    strict: true,
-  });
+  const routesJWT = express.Router({ strict: true });
 
   // protect routes with JWT guard
   routesJWT.use(passport.authenticate("jwt", { session: false }));
@@ -39,9 +37,7 @@ const jwtRoutes = () => {
 
 const jwtRefreshRoutes = () => {
   // create router
-  const routesJWTRefresh = express.Router({
-    strict: true,
-  });
+  const routesJWTRefresh = express.Router({ strict: true });
 
   // protect routes with JWT refresh guard
   routesJWTRefresh.post("/refresh-token", [
@@ -53,28 +49,25 @@ const jwtRefreshRoutes = () => {
   return routesJWTRefresh;
 };
 
-const jwtRegisterRoutes = () => {
+const jwtActionRoutes = () => {
   // create router
-  const routesJWTRegister = express.Router({
-    strict: true,
-  });
+  const routesJWTAction = express.Router({ strict: true });
 
   // protect routes with JWT refresh guard
-  routesJWTRegister.post("/users/register", [
-    passport.authenticate("jwt-register", { session: false }),
+  routesJWTAction.post("/users/register", [
+    passport.authenticate("jwt-action", { session: false }),
+    validateActionToken("register"),
     loadMeAsTargetUser(),
     validateUserNotRegistred(),
     usersController.update,
   ]);
 
-  return routesJWTRegister;
+  return routesJWTAction;
 };
 
 const loginRoutes = () => {
   // create router
-  const routesLogin = express.Router({
-    strict: true,
-  });
+  const routesLogin = express.Router({ strict: true });
 
   // bind routes
   routesLogin.post("/login", [
@@ -89,7 +82,7 @@ export const apiRoutes = () => {
   const routes = express.Router({ strict: true });
   routes.use(loginRoutes());
   routes.use(jwtRefreshRoutes());
-  routes.use(jwtRegisterRoutes());
+  routes.use(jwtActionRoutes());
   routes.use(jwtRoutes());
 
   // error handling middleware
